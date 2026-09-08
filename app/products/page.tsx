@@ -10,6 +10,7 @@ import {
   Card,
   Badge,
   Skeleton,
+  Modal,
 } from "@/components/ui";
 import {
   Plus,
@@ -22,6 +23,7 @@ import {
   CheckCircle2,
   Eye,
   Filter,
+  Trash2,
 } from "lucide-react";
 import { FullProductWithDetails } from "@/types/product";
 import {
@@ -31,13 +33,16 @@ import {
 } from "@/lib/data/products";
 import { formatINR, formatLocalizedText } from "@/lib/utils";
 import { QrModal, ShareButton } from "@/components/market";
+import { deleteProductAction } from "@/app/actions/delete-product";
 
 export default function ArtisanProductsPage() {
   const { language, t } = useLanguage();
   const { profile } = useAuth();
   const [products, setProducts] = useState<FullProductWithDetails[]>([]);
-  const [filter, setFilter] = useState<"all" | "published" | "draft">("all");
+  const [filter, setFilter] = useState<"all" | "live" | "demo" | "draft">("all");
   const [selectedQrProduct, setSelectedQrProduct] = useState<FullProductWithDetails | null>(null);
+  const [productToDelete, setProductToDelete] = useState<FullProductWithDetails | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
@@ -56,17 +61,70 @@ export default function ArtisanProductsPage() {
       });
   }, []);
 
+  const liveArtisanProducts = products.filter((p) => !p.is_demo && p.status === "published");
+  const demoProducts = products.filter((p) => p.is_demo);
+  const draftProducts = products.filter((p) => p.status === "draft");
+
   const filteredProducts = products.filter((p) => {
     if (filter === "all") return true;
-    return p.status === filter;
+    if (filter === "live") return !p.is_demo && p.status === "published";
+    if (filter === "demo") return p.is_demo;
+    if (filter === "draft") return p.status === "draft";
+    return true;
   });
 
-  const publishedCount = products.filter((p) => p.status === "published").length;
-  const draftCount = products.filter((p) => p.status === "draft").length;
+  const handleConfirmDelete = async () => {
+    if (!productToDelete) return;
+    setIsDeleting(true);
+
+    try {
+      // 1. Delete from Supabase cloud database
+      await deleteProductAction({
+        id: productToDelete.id,
+        slug: productToDelete.slug,
+      });
+
+      // 2. Delete from browser localStorage
+      if (typeof window !== "undefined") {
+        try {
+          const stored = localStorage.getItem("karigarai_saved_products");
+          if (stored) {
+            const list: FullProductWithDetails[] = JSON.parse(stored);
+            const updated = list.filter(
+              (p) => p.id !== productToDelete.id && p.slug !== productToDelete.slug
+            );
+            localStorage.setItem("karigarai_saved_products", JSON.stringify(updated));
+          }
+        } catch {}
+
+        // If it was a demo product, record in hidden demos so it stays removed
+        if (productToDelete.is_demo) {
+          try {
+            const hidden = JSON.parse(localStorage.getItem("karigarai_hidden_demos") || "[]");
+            if (!hidden.includes(productToDelete.id)) {
+              hidden.push(productToDelete.id);
+              localStorage.setItem("karigarai_hidden_demos", JSON.stringify(hidden));
+            }
+          } catch {}
+        }
+      }
+
+      // 3. Immediately update UI state
+      setProducts((prev) =>
+        prev.filter((p) => p.id !== productToDelete.id && p.slug !== productToDelete.slug)
+      );
+      setProductToDelete(null);
+    } catch (err) {
+      console.error("Failed to delete product:", err);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const handleResetDemoData = () => {
     if (typeof window !== "undefined") {
       localStorage.removeItem("karigarai_saved_products");
+      localStorage.removeItem("karigarai_hidden_demos");
       const reloaded = getCatalogProducts();
       setProducts(reloaded);
     }
@@ -83,8 +141,8 @@ export default function ArtisanProductsPage() {
             </h1>
             <p className="text-[11px] text-slate-500 font-medium">
               {language === "hi"
-                ? `${products.length} उत्पाद • ${publishedCount} लाइव बाज़ार में`
-                : `${products.length} Products • ${publishedCount} Live in Market`}
+                ? `${liveArtisanProducts.length} लाइव उत्पाद • ${demoProducts.length} डेमो नमूने`
+                : `${liveArtisanProducts.length} Live Products • ${demoProducts.length} Demo Samples`}
             </p>
           </div>
 
@@ -152,26 +210,39 @@ export default function ArtisanProductsPage() {
           </button>
           <button
             type="button"
-            onClick={() => setFilter("published")}
+            onClick={() => setFilter("live")}
             className={`flex-1 py-1.5 rounded-lg text-center transition-all ${
-              filter === "published"
+              filter === "live"
                 ? "bg-white text-emerald-800 shadow-xs"
                 : "text-slate-500 hover:text-slate-900"
             }`}
           >
-            {language === "hi" ? "लाइव" : "Live"} ({publishedCount})
+            {language === "hi" ? "मेरे लाइव" : "Live"} ({liveArtisanProducts.length})
           </button>
           <button
             type="button"
-            onClick={() => setFilter("draft")}
+            onClick={() => setFilter("demo")}
             className={`flex-1 py-1.5 rounded-lg text-center transition-all ${
-              filter === "draft"
-                ? "bg-white text-slate-800 shadow-xs"
+              filter === "demo"
+                ? "bg-white text-amber-800 shadow-xs"
                 : "text-slate-500 hover:text-slate-900"
             }`}
           >
-            {language === "hi" ? "ड्राफ्ट" : "Draft"} ({draftCount})
+            {language === "hi" ? "डेमो" : "Demo"} ({demoProducts.length})
           </button>
+          {draftProducts.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setFilter("draft")}
+              className={`flex-1 py-1.5 rounded-lg text-center transition-all ${
+                filter === "draft"
+                  ? "bg-white text-slate-800 shadow-xs"
+                  : "text-slate-500 hover:text-slate-900"
+              }`}
+            >
+              {language === "hi" ? "ड्राफ्ट" : "Draft"} ({draftProducts.length})
+            </button>
+          )}
         </div>
 
         {/* Products List */}
@@ -327,6 +398,16 @@ export default function ArtisanProductsPage() {
                       size="icon"
                       className="h-8 w-8 p-0 flex items-center justify-center"
                     />
+
+                    {/* Delete Product */}
+                    <button
+                      type="button"
+                      onClick={() => setProductToDelete(product)}
+                      title={language === "hi" ? "उत्पाद हटाएं" : "Delete Product"}
+                      className="p-1.5 h-8 w-8 rounded-xl border border-rose-200 hover:bg-rose-50 text-rose-600 flex items-center justify-center transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
               );
@@ -369,6 +450,47 @@ export default function ArtisanProductsPage() {
           lang={language}
         />
       )}
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={Boolean(productToDelete)}
+        onClose={() => !isDeleting && setProductToDelete(null)}
+        title={language === "hi" ? "उत्पाद हटाएं?" : "Delete Product?"}
+        description={
+          language === "hi"
+            ? `क्या आप वाकई "${productToDelete ? (language === "hi" ? productToDelete.title_hi : productToDelete.title_en) : ""}" को अपने कैटलॉग से हटाना चाहते हैं?`
+            : `Are you sure you want to delete "${productToDelete?.title_en || productToDelete?.title_hi}" from your catalog?`
+        }
+      >
+        <div className="space-y-4 pt-2 text-left">
+          <p className="text-xs text-slate-500 leading-relaxed">
+            {language === "hi"
+              ? "यह क्रिया इस उत्पाद को आपके डिजिटल कैटलॉग एवं सार्वजनिक लिंक से पूरी तरह हटा देगी।"
+              : "This action will permanently delete this product from your digital catalog and public listing."}
+          </p>
+          <div className="flex gap-2 justify-end pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setProductToDelete(null)}
+              disabled={isDeleting}
+            >
+              <span>{language === "hi" ? "रद्द करें" : "Cancel"}</span>
+            </Button>
+            <Button
+              type="button"
+              variant="danger"
+              size="sm"
+              onClick={handleConfirmDelete}
+              isLoading={isDeleting}
+            >
+              <Trash2 className="w-3.5 h-3.5 mr-1" />
+              <span>{language === "hi" ? "हां, हटाएं" : "Yes, Delete"}</span>
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </MobileShell>
   );
 }

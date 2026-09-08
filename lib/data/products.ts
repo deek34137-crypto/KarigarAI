@@ -49,9 +49,9 @@ export const BENCHMARK_DEMO_PRODUCTS: FullProductWithDetails[] = [
       estimated_weight: "1.4 kg",
     },
     original_image_url:
-      "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=800&q=80",
     processed_image_url:
-      "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=800&q=80",
     base_cost: 380,
     price_min: 650,
     price_max: 950,
@@ -242,6 +242,8 @@ export async function getProductBySlugOrId(
  */
 export function getCatalogProducts(): FullProductWithDetails[] {
   let localProducts: FullProductWithDetails[] = [];
+  let hiddenDemos: string[] = [];
+
   if (typeof window !== "undefined") {
     try {
       const stored = localStorage.getItem("karigarai_saved_products");
@@ -251,12 +253,21 @@ export function getCatalogProducts(): FullProductWithDetails[] {
     } catch {
       localProducts = [];
     }
+
+    try {
+      const hidden = localStorage.getItem("karigarai_hidden_demos");
+      if (hidden) {
+        hiddenDemos = JSON.parse(hidden);
+      }
+    } catch {
+      hiddenDemos = [];
+    }
   }
 
   const idMap = new Map<string, FullProductWithDetails>();
   localProducts.forEach((p) => idMap.set(p.id, p));
   BENCHMARK_DEMO_PRODUCTS.forEach((p) => {
-    if (!idMap.has(p.id)) {
+    if (!idMap.has(p.id) && !hiddenDemos.includes(p.id)) {
       idMap.set(p.id, p);
     }
   });

@@ -104,5 +104,12 @@ describe("Phase 7: Market Linkage & Public Listings Unit Tests", () => {
     });
     assert.ok(dataUrl.startsWith("data:image/png;base64,"));
   });
+
+  it("should reject delete request when neither id nor slug is provided", async () => {
+    const { deleteProductAction } = await import("../app/actions/delete-product.ts");
+    const res = await deleteProductAction({});
+    assert.strictEqual(res.success, false);
+    assert.ok(res.error?.includes("required"));
+  });
 });
 
