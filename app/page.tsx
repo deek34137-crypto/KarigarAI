@@ -22,7 +22,6 @@ import {
   Languages,
   DollarSign,
   Share2,
-  CheckCircle2,
   Sparkles,
   ArrowRight,
   Sliders,
@@ -111,16 +110,21 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* Phase 1 Verification Status Banner */}
-        <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-50 border border-emerald-200 shadow-xs">
+        {/* Multimodal AI System Status Banner */}
+        <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200/80 shadow-xs">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
             <span className="text-xs font-bold text-emerald-900">
-              {t("phase0CompleteBadge")}
+              {language === "hi"
+                ? "स्मार्ट बहुभाषी AI प्रणाली सक्रिय"
+                : "Multimodal AI Engine Ready"}
             </span>
           </div>
           <Badge variant="success" className="text-[10px]">
-            {language === "hi" ? "सक्रिय" : "Active"}
+            {language === "hi" ? "लाइव" : "Live"}
           </Badge>
         </div>
 
@@ -310,8 +314,12 @@ export default function HomePage() {
               {t("sampleCraftDesc")}
             </p>
             <div className="flex gap-1.5 mt-2">
-              <Badge variant="default">मिट्टी शिल्प</Badge>
-              <Badge variant="success">हस्तनिर्मित</Badge>
+              <Badge variant="default">
+                {language === "hi" ? "मिट्टी शिल्प" : "Terracotta"}
+              </Badge>
+              <Badge variant="success">
+                {language === "hi" ? "हस्तनिर्मित" : "Handcrafted"}
+              </Badge>
               <Badge variant="neutral">₹850</Badge>
             </div>
           </div>

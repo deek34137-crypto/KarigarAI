@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -17,6 +17,7 @@ import {
   HelpCircle,
   CheckCircle2,
 } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/context";
 import { FullProductWithDetails } from "@/types/product";
 import { formatINR, formatLocalizedText, getLocalizedInitial } from "@/lib/utils";
 import { WhatsAppButton } from "./whatsapp-button";
@@ -29,10 +30,21 @@ interface PublicProductViewProps {
 }
 
 export function PublicProductView({ product }: PublicProductViewProps) {
-  // Independent language toggle for public visitors/buyers (default Hindi, toggleable to English)
-  const [buyerLang, setBuyerLang] = useState<"hi" | "en">("hi");
+  const { language, setLanguage } = useLanguage();
+  // Synchronized with global preferred language, with manual page-level override
+  const [buyerLang, setBuyerLang] = useState<"hi" | "en">(language);
   const [showOriginalImage, setShowOriginalImage] = useState(false);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+
+  // Sync if global language changes
+  useEffect(() => {
+    setBuyerLang(language);
+  }, [language]);
+
+  const handleLangChange = (newLang: "hi" | "en") => {
+    setBuyerLang(newLang);
+    setLanguage(newLang);
+  };
 
   const title = buyerLang === "hi" ? product.title_hi : product.title_en;
   const description =
@@ -69,14 +81,14 @@ export function PublicProductView({ product }: PublicProductViewProps) {
             className="flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-slate-900"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>कारीगरAI</span>
+            <span>{buyerLang === "hi" ? "कारीगरAI" : "KarigarAI"}</span>
           </Link>
 
           {/* Buyer Language Switcher */}
           <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200">
             <button
               type="button"
-              onClick={() => setBuyerLang("hi")}
+              onClick={() => handleLangChange("hi")}
               className={`px-2.5 py-1 rounded-md text-xs font-bold transition-colors ${
                 buyerLang === "hi"
                   ? "bg-white text-terracotta-800 shadow-xs"
@@ -87,7 +99,7 @@ export function PublicProductView({ product }: PublicProductViewProps) {
             </button>
             <button
               type="button"
-              onClick={() => setBuyerLang("en")}
+              onClick={() => handleLangChange("en")}
               className={`px-2.5 py-1 rounded-md text-xs font-bold transition-colors ${
                 buyerLang === "en"
                   ? "bg-white text-terracotta-800 shadow-xs"

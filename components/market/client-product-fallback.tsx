@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { FullProductWithDetails } from "@/types/product";
 import { normalizeKey } from "@/lib/data/products";
+import { useLanguage } from "@/lib/i18n/context";
 import { PublicProductView } from "./public-product-view";
 import { Button, Card, Badge } from "@/components/ui";
 import { AlertCircle, ArrowLeft, PackageOpen, Sparkles, Home } from "lucide-react";
@@ -13,6 +14,7 @@ interface ClientProductFallbackProps {
 }
 
 export function ClientProductFallback({ slug }: ClientProductFallbackProps) {
+  const { language } = useLanguage();
   const [product, setProduct] = useState<FullProductWithDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -44,7 +46,9 @@ export function ClientProductFallback({ slug }: ClientProductFallbackProps) {
         <div className="text-center space-y-3">
           <div className="w-10 h-10 border-3 border-orange-200 border-t-terracotta-700 rounded-full animate-spin mx-auto" />
           <p className="text-xs text-slate-500 font-medium">
-            कारीगर कैटलॉग खोजा जा रहा है... (Finding craft listing...)
+            {language === "hi"
+              ? "कारीगर कैटलॉग खोजा जा रहा है..."
+              : "Finding craft listing..."}
           </p>
         </div>
       </div>
@@ -67,10 +71,12 @@ export function ClientProductFallback({ slug }: ClientProductFallbackProps) {
             404 • Not Found
           </Badge>
           <h2 className="text-base font-black text-slate-900">
-            उत्पाद नहीं मिला / Product Not Found
+            {language === "hi" ? "उत्पाद नहीं मिला" : "Product Not Found"}
           </h2>
           <p className="text-xs text-slate-500 leading-relaxed">
-            यह उत्पाद लिंक मान्य नहीं है या अभी प्रकाशित नहीं हुआ है। कृपया नया उत्पाद बनाएं या डेमो उत्पाद देखें।
+            {language === "hi"
+              ? "यह उत्पाद लिंक मान्य नहीं है या अभी प्रकाशित नहीं हुआ है। कृपया नया उत्पाद बनाएं या नमूना उत्पाद देखें।"
+              : "This product link is invalid or has not been published yet. Please create a new product or check sample listings."}
           </p>
           <p className="text-[11px] font-mono text-slate-400 pt-1">
             /p/{slug}
@@ -81,20 +87,20 @@ export function ClientProductFallback({ slug }: ClientProductFallbackProps) {
           <Link href="/p/gorakhpur-terracotta-pitcher" className="block">
             <Button variant="default" size="md" fullWidth>
               <Sparkles className="w-4 h-4 mr-1.5" />
-              <span>नमूना उत्पाद देखें (Demo Listing)</span>
+              <span>{language === "hi" ? "नमूना उत्पाद देखें" : "View Sample Listing"}</span>
             </Button>
           </Link>
 
           <Link href="/products" className="block">
             <Button variant="secondary" size="sm" fullWidth>
-              <span>शिल्पकार कैटलॉग (Artisan Catalog)</span>
+              <span>{language === "hi" ? "शिल्पकार कैटलॉग" : "Artisan Catalog"}</span>
             </Button>
           </Link>
 
           <Link href="/" className="block">
             <Button variant="outline" size="sm" fullWidth>
               <Home className="w-4 h-4 mr-1.5" />
-              <span>मुख्य पृष्ठ (Home)</span>
+              <span>{language === "hi" ? "मुख्य पृष्ठ" : "Home"}</span>
             </Button>
           </Link>
         </div>

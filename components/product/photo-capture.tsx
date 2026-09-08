@@ -43,7 +43,11 @@ export function PhotoCapture({
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      setErrorMsg("कृपया केवल फोटो (JPG, PNG) चुनें।");
+      setErrorMsg(
+        language === "hi"
+          ? "कृपया केवल फोटो (JPG, PNG) चुनें।"
+          : "Please select an image file (JPG, PNG)."
+      );
       return;
     }
 
@@ -55,7 +59,11 @@ export function PhotoCapture({
       onImageCaptured(result);
     } catch (err: any) {
       console.error("Compression error:", err);
-      setErrorMsg("फोटो प्रोसेस करने में त्रुटि हुई। कृपया दोबारा प्रयास करें।");
+      setErrorMsg(
+        language === "hi"
+          ? "फोटो प्रोसेस करने में त्रुटि हुई। कृपया दोबारा प्रयास करें।"
+          : "Failed to process photo. Please try again."
+      );
     } finally {
       setIsProcessing(false);
     }

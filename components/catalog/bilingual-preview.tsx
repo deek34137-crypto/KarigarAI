@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLanguage } from "@/lib/i18n/context";
 import { CatalogGenerationResult } from "@/lib/ai/schemas/catalog";
 import { ProductAnalysisResult } from "@/lib/ai/schemas/product-analysis";
@@ -35,6 +35,11 @@ export function BilingualPreview({
   const { language, t } = useLanguage();
   const [previewLang, setPreviewLang] = useState<"hi" | "en">(language);
   const [isEditing, setIsEditing] = useState(false);
+
+  // Sync preview language when global language changes
+  useEffect(() => {
+    setPreviewLang(language);
+  }, [language]);
 
   // Editable local copies
   const [titleEn, setTitleEn] = useState(catalog.titleEnglish);

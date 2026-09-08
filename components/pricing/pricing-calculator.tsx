@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLanguage } from "@/lib/i18n/context";
 import { PricingReasoningResult } from "@/lib/ai/schemas/pricing";
 import { calculatePricingAction } from "@/app/actions/pricing";
@@ -64,6 +64,11 @@ export function PricingCalculator({
   const [pricingResult, setPricingResult] = useState<PricingReasoningResult | null>(null);
   const [customPrice, setCustomPrice] = useState<number | null>(null);
   const [reasoningLang, setReasoningLang] = useState<"hi" | "en">(language);
+
+  // Sync reasoning language when global language preference changes
+  useEffect(() => {
+    setReasoningLang(language);
+  }, [language]);
 
   // Deterministic Base Cost Calculation
   const totalLabourCost = labourHours * hourlyWage;

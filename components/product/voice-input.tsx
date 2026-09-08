@@ -78,7 +78,7 @@ export function VoiceInput({ value, onChange, craftHint }: VoiceInputProps) {
                 : "text-slate-500 hover:text-slate-800"
             )}
           >
-            आवाज (Mic)
+            {language === "hi" ? "आवाज (Mic)" : "Voice (Mic)"}
           </button>
           <button
             type="button"
@@ -90,7 +90,7 @@ export function VoiceInput({ value, onChange, craftHint }: VoiceInputProps) {
                 : "text-slate-500 hover:text-slate-800"
             )}
           >
-            लिखें (Text)
+            {language === "hi" ? "लिखें (Text)" : "Type (Text)"}
           </button>
         </div>
       </div>
@@ -153,7 +153,7 @@ export function VoiceInput({ value, onChange, craftHint }: VoiceInputProps) {
                   size="sm"
                   onClick={handleApplyTranscript}
                 >
-                  <span>जोड़ें (Apply)</span>
+                  <span>{language === "hi" ? "जोड़ें (Apply)" : "Apply"}</span>
                 </Button>
                 <Button
                   type="button"
@@ -161,7 +161,7 @@ export function VoiceInput({ value, onChange, craftHint }: VoiceInputProps) {
                   size="sm"
                   onClick={resetTranscript}
                 >
-                  <span>रद्द करें</span>
+                  <span>{language === "hi" ? "रद्द करें" : "Cancel"}</span>
                 </Button>
               </div>
             </div>
@@ -182,7 +182,7 @@ export function VoiceInput({ value, onChange, craftHint }: VoiceInputProps) {
               className="text-[11px] font-semibold text-rose-600 hover:underline flex items-center gap-1"
             >
               <RotateCcw className="w-3 h-3" />
-              <span>साफ करें</span>
+              <span>{language === "hi" ? "साफ करें" : "Clear"}</span>
             </button>
           )}
         </div>

@@ -190,7 +190,7 @@ export default function ProfilePage() {
                   onClick={signInDemo}
                 >
                   <Sparkles className="w-3.5 h-3.5 mr-1 text-amber-700" />
-                  <span>रीसेट</span>
+                  <span>{language === "hi" ? "रीसेट" : "Reset"}</span>
                 </Button>
               </div>
 

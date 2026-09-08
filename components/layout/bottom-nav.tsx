@@ -53,12 +53,12 @@ export function BottomNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="relative -top-4 flex flex-col items-center group focus:outline-none"
+                className="flex flex-col items-center justify-center w-16 h-full py-1 text-[11px] font-semibold transition-transform duration-150 group focus:outline-none"
               >
-                <div className="w-13 h-13 rounded-full bg-gradient-to-tr from-terracotta-700 to-orange-500 text-white flex items-center justify-center shadow-lg shadow-orange-500/30 transition-transform duration-200 group-hover:scale-105 active:scale-95">
-                  <Plus className="w-6 h-6 stroke-[2.5]" />
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-terracotta-700 to-orange-500 text-white flex items-center justify-center shadow-md shadow-orange-500/20 group-hover:scale-105 active:scale-95 transition-transform">
+                  <Plus className="w-5 h-5 stroke-[2.5]" />
                 </div>
-                <span className="text-[10px] font-bold text-terracotta-700 mt-1">
+                <span className="text-[10px] font-bold text-terracotta-700 mt-0.5 leading-none">
                   {item.label}
                 </span>
               </Link>

@@ -95,7 +95,7 @@ export const translations = {
     statusArchived: "संग्रहीत",
 
     // Demo & Feedback
-    phase0CompleteBadge: "चरण 0 एवं चरण 1 सक्रिय",
+    phase0CompleteBadge: "स्मार्ट बहुभाषी AI प्रणाली सक्रिय",
     tryInteractiveTokens: "डिजाइन सिस्टम और भाषा परीक्षण",
     testModalTitle: "कारीगर संवाद (Modal)",
     testModalDesc: "यह मोबाइल-अनुकूल पॉप-अप संवाद है जिसे कारीगर बिना किसी भ्रम के उपयोग कर सकते हैं।",
@@ -197,7 +197,7 @@ export const translations = {
     statusArchived: "Archived",
 
     // Demo & Feedback
-    phase0CompleteBadge: "Phase 0 & Phase 1 Active",
+    phase0CompleteBadge: "Multimodal AI Engine Ready",
     tryInteractiveTokens: "Design System & Language Test",
     testModalTitle: "Artisan Modal Dialog",
     testModalDesc: "This is a mobile-optimized modal dialog designed for low-friction artisan confirmation.",
