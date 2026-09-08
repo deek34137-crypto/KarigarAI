@@ -15,7 +15,7 @@ import {
   Button,
   Input,
 } from "@/components/ui";
-import { Sparkles, Languages, Check, Edit3, Tag, Layers, CheckCircle2 } from "lucide-react";
+import { Sparkles, Languages, Check, Edit3, Tag, Layers, CheckCircle2, RotateCcw } from "lucide-react";
 
 interface BilingualPreviewProps {
   catalog: CatalogGenerationResult;
@@ -23,6 +23,8 @@ interface BilingualPreviewProps {
   onUpdate: (updated: CatalogGenerationResult) => void;
   onProceedToPricing: () => void;
   onBack: () => void;
+  onRegenerate?: () => void;
+  isRegenerating?: boolean;
 }
 
 export function BilingualPreview({
@@ -31,6 +33,8 @@ export function BilingualPreview({
   onUpdate,
   onProceedToPricing,
   onBack,
+  onRegenerate,
+  isRegenerating = false,
 }: BilingualPreviewProps) {
   const { language, t } = useLanguage();
   const [previewLang, setPreviewLang] = useState<"hi" | "en">(language);
@@ -41,11 +45,18 @@ export function BilingualPreview({
     setPreviewLang(language);
   }, [language]);
 
-  // Editable local copies
+  // Editable local copies synced whenever catalog prop updates
   const [titleEn, setTitleEn] = useState(catalog.titleEnglish);
   const [titleHi, setTitleHi] = useState(catalog.titleHindi);
   const [descEn, setDescEn] = useState(catalog.descriptionEnglish);
   const [descHi, setDescHi] = useState(catalog.descriptionHindi);
+
+  useEffect(() => {
+    setTitleEn(catalog.titleEnglish);
+    setTitleHi(catalog.titleHindi);
+    setDescEn(catalog.descriptionEnglish);
+    setDescHi(catalog.descriptionHindi);
+  }, [catalog]);
 
   const handleSaveEdits = () => {
     onUpdate({
@@ -110,14 +121,36 @@ export function BilingualPreview({
             <Badge variant="secondary">
               {vision?.craftType || "Handicraft"}
             </Badge>
-            <button
-              type="button"
-              onClick={() => setIsEditing(!isEditing)}
-              className="text-xs font-bold text-terracotta-700 hover:text-terracotta-800 flex items-center gap-1"
-            >
-              <Edit3 className="w-3.5 h-3.5" />
-              <span>{isEditing ? t("cancel") : t("edit")}</span>
-            </button>
+            <div className="flex items-center gap-2">
+              {onRegenerate && (
+                <button
+                  type="button"
+                  onClick={onRegenerate}
+                  disabled={isRegenerating}
+                  className="text-xs font-bold text-slate-600 hover:text-terracotta-700 flex items-center gap-1 bg-slate-100 hover:bg-orange-50 px-2 py-1 rounded-lg transition-all disabled:opacity-50"
+                  title={language === "hi" ? "AI से पुनः कैटलॉग बनाएं" : "Regenerate with AI"}
+                >
+                  <RotateCcw className={`w-3.5 h-3.5 ${isRegenerating ? "animate-spin text-terracotta-700" : ""}`} />
+                  <span>
+                    {isRegenerating
+                      ? language === "hi"
+                        ? "बन रहा है..."
+                        : "Generating..."
+                      : language === "hi"
+                      ? "पुनः बनाएं"
+                      : "Regenerate"}
+                  </span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setIsEditing(!isEditing)}
+                className="text-xs font-bold text-terracotta-700 hover:text-terracotta-800 flex items-center gap-1 px-2 py-1 rounded-lg border border-terracotta-200 hover:bg-orange-50"
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+                <span>{isEditing ? t("cancel") : t("edit")}</span>
+              </button>
+            </div>
           </div>
         </CardHeader>
 

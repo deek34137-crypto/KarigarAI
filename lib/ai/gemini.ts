@@ -66,44 +66,53 @@ export async function runGeminiJsonCall<T>(params: {
   }
 
   const client = getGeminiClient();
-  const modelName = params.model || "gemini-3.6-flash";
+  const modelsToTry = params.model
+    ? [params.model, "gemini-3.5-flash-lite", "gemini-3.6-flash"]
+    : ["gemini-3.5-flash-lite", "gemini-3.6-flash"];
 
-  try {
-    const model = client.getGenerativeModel({
-      model: modelName,
-      generationConfig: {
-        responseMimeType: "application/json",
-        temperature: 0.2,
-      },
-      systemInstruction: params.systemInstruction,
-    });
+  let lastError: any = null;
 
-    const parts: (string | Part)[] = [];
-    if (params.imagePart) {
-      parts.push({
-        inlineData: {
-          data: stripBase64Prefix(params.imagePart.inlineData.data),
-          mimeType: params.imagePart.inlineData.mimeType,
+  for (const modelName of modelsToTry) {
+    try {
+      const model = client.getGenerativeModel({
+        model: modelName,
+        generationConfig: {
+          responseMimeType: "application/json",
+          temperature: 0.2,
         },
+        systemInstruction: params.systemInstruction,
       });
+
+      const parts: (string | Part)[] = [];
+      if (params.imagePart) {
+        parts.push({
+          inlineData: {
+            data: stripBase64Prefix(params.imagePart.inlineData.data),
+            mimeType: params.imagePart.inlineData.mimeType,
+          },
+        });
+      }
+      parts.push(params.prompt);
+
+      const result = await model.generateContent(parts);
+      const response = await result.response;
+      const text = response.text();
+
+      if (!text) {
+        throw new Error("Gemini returned an empty response.");
+      }
+
+      const sanitized = sanitizeJsonResponse(text);
+      const parsed = JSON.parse(sanitized);
+      return params.validator(parsed);
+    } catch (error: any) {
+      console.warn(`[Gemini Model ${modelName} Warning]:`, error?.message || error);
+      lastError = error;
     }
-    parts.push(params.prompt);
-
-    const result = await model.generateContent(parts);
-    const response = await result.response;
-    const text = response.text();
-
-    if (!text) {
-      throw new Error("Gemini returned an empty response.");
-    }
-
-    const sanitized = sanitizeJsonResponse(text);
-    const parsed = JSON.parse(sanitized);
-    return params.validator(parsed);
-  } catch (error: any) {
-    console.error("[KarigarAI Gemini Service Error]:", error?.message || error);
-    throw new Error(
-      error?.message || "Failed to process AI request. Please try again."
-    );
   }
+
+  console.error("[KarigarAI Gemini Service Error]: All models failed.", lastError?.message || lastError);
+  throw new Error(
+    lastError?.message || "Failed to process AI request across all available Gemini models."
+  );
 }

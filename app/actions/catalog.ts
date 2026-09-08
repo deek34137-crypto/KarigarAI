@@ -112,18 +112,30 @@ export async function generateCompleteCatalogPipelineAction(params: {
 
     // Fallback template for resilient degradation (Never leave artisan stuck)
     const fallbackTitle = params.craftHint || "Handcrafted Traditional Artisan Craft";
+    const rawNote = params.artisanRawNote?.trim() || "";
+    const hasDevanagari = /[\u0900-\u097F]/.test(rawNote);
+
+    let descEn = "Authentic handcrafted product created using traditional Indian artisanal techniques and natural materials.";
+    let descHi = "पारंपरिक भारतीय शिल्प तकनीकों और प्राकृतिक सामग्रियों से हस्तनिर्मित प्रामाणिक उत्पाद। यह विशेष कलाकृति समृद्ध सांस्कृतिक धरोहर का प्रतीक है।";
+
+    if (rawNote) {
+      if (hasDevanagari) {
+        descHi = rawNote;
+        descEn = `Authentic handcrafted craft (${params.craftHint || "Traditional Indian Art"}), meticulously prepared with ancestral artisan methods and eco-friendly raw elements.`;
+      } else {
+        descEn = rawNote;
+        descHi = `पारंपरिक हस्तशिल्प कला द्वारा निर्मित एक अनूठी व प्रामाणिक कृति (${params.craftHint || "पारंपरिक शिल्प"})। यह हस्तशिल्प पीढ़ियों से चली आ रही सांस्कृतिक परंपरा और कारीगर के समर्पण का सजीव प्रमाण है।`;
+      }
+    }
+
     return {
       success: false,
       error: err?.message || "AI catalog generation timed out or failed.",
       fallbackData: {
         titleEnglish: fallbackTitle,
         titleHindi: `हस्तनिर्मित पारंपरिक शिल्प (${fallbackTitle})`,
-        descriptionEnglish:
-          params.artisanRawNote ||
-          "Authentic handcrafted product created using traditional Indian artisanal techniques and natural materials.",
-        descriptionHindi:
-          params.artisanRawNote ||
-          "पारंपरिक भारतीय शिल्प तकनीकों और प्राकृतिक सामग्रियों से हस्तनिर्मित प्रामाणिक उत्पाद।",
+        descriptionEnglish: descEn,
+        descriptionHindi: descHi,
         tagsEnglish: ["handmade", "traditional-craft", "artisan-made"],
         tagsHindi: ["हस्तनिर्मित", "पारंपरिक-शिल्प", "कारीगर"],
         keyAttributes: [
@@ -132,6 +144,12 @@ export async function generateCompleteCatalogPipelineAction(params: {
             attributeNameHi: "शिल्प तकनीक",
             attributeValueEn: "Handcrafted",
             attributeValueHi: "हस्तनिर्मित",
+          },
+          {
+            attributeNameEn: "Material",
+            attributeNameHi: "सामग्री",
+            attributeValueEn: "Natural Earth / Traditional",
+            attributeValueHi: "प्राकृतिक माटी / पारंपरिक",
           },
         ],
       },

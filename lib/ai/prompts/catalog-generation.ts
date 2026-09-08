@@ -12,8 +12,10 @@ Required Outputs:
 7. keyAttributes: Array of 3 to 6 key attribute pairs with both English and Hindi labels and values (e.g. Material/सामग्री, Craft/शिल्प, Dimensions/आकार, Care/रखरखाव).
 
 CRITICAL CONSTRAINTS:
-- The Hindi output must be natural and grammatically fluid, not mechanical word-for-word translation.
-- Preserve any authentic craft terminology mentioned by the artisan.
+- The Hindi output (titleHindi, descriptionHindi, tagsHindi, attribute names/values in Hindi) MUST be written in pure, natural Hindi using Devanagari script. NEVER return English text in descriptionHindi or titleHindi, even if the artisan provided their note entirely in English.
+- The English output (titleEnglish, descriptionEnglish, tagsEnglish, attribute names/values in English) MUST be written in fluent, professional English. NEVER return Hindi or Hinglish text in descriptionEnglish.
+- Both descriptions must be comprehensive (120-250 words) highlighting craft techniques, materials, aesthetic value, and care instructions.
+- Preserve any authentic craft terminology mentioned by the artisan (e.g. Terracotta, Gorakhpur, Surahi, Mati).
 - Do NOT invent GI certifications, government awards, or mythical claims unless the artisan stated them.
 - Return ONLY a raw JSON object matching the requested schema.
 `;

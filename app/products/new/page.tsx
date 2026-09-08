@@ -422,9 +422,7 @@ export default function NewProductPage() {
                 size="md"
                 onClick={() => {
                   setCurrentStep(3);
-                  if (!catalogResult) {
-                    handleGenerateAiCatalog();
-                  }
+                  handleGenerateAiCatalog();
                 }}
                 className="flex-1 shadow-md"
               >
@@ -476,6 +474,8 @@ export default function NewProductPage() {
                   onUpdate={(up) => setCatalogResult(up)}
                   onProceedToPricing={() => setCurrentStep(4)}
                   onBack={handleBack}
+                  onRegenerate={handleGenerateAiCatalog}
+                  isRegenerating={isGeneratingAi}
                 />
 
                 {/* Optional Authenticity-First Heritage Craft Story Archiving */}
