@@ -53,82 +53,48 @@ export default function HomePage() {
     setWishlist(getWishlist());
   }, []);
 
-  // Buyer / unauthenticated landing
-  if (!isLoading && !profile) {
+  // Loading skeleton — prevents flash of wrong content
+  if (isLoading) {
     return (
       <MobileShell>
-        <div className="p-4 space-y-5 flex flex-col items-center text-center">
-          <div className="pt-6 space-y-3">
-            <div className="w-16 h-16 rounded-2xl bg-orange-100 text-terracotta-700 flex items-center justify-center mx-auto shadow-sm">
-              <ShoppingBag className="w-8 h-8" />
-            </div>
-            <h1 className="text-xl font-extrabold text-slate-900 leading-snug">
-              {language === "hi" ? "KarigarAI — हस्तशिल्प बाजार" : "KarigarAI — Artisan Marketplace"}
-            </h1>
-            <p className="text-sm text-slate-500 max-w-[280px] mx-auto leading-relaxed">
-              {language === "hi"
-                ? "भारतीय शिल्पकारों के सीधे उत्पाद खरीदें। कोई बिचौलिया नहीं।"
-                : "Buy directly from Indian artisans. No middlemen. Authentic handcrafted goods."}
-            </p>
-          </div>
+        <div className="p-4 space-y-4 animate-pulse">
+          <div className="h-20 rounded-2xl bg-slate-100" />
+          <div className="h-16 rounded-xl bg-slate-100" />
+          <div className="h-16 rounded-xl bg-slate-100" />
+        </div>
+      </MobileShell>
+    );
+  }
 
-          <div className="w-full space-y-3 text-left">
-            <div className="flex items-start gap-3 p-3 rounded-xl bg-white border border-slate-200/80 shadow-xs">
-              <div className="w-8 h-8 rounded-lg bg-orange-100 text-terracotta-700 flex items-center justify-center shrink-0">
-                <Camera className="w-4 h-4" />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-slate-900">
-                  {language === "hi" ? "सीधे कारीगर से खरीदें" : "Buy Direct from Artisan"}
-                </h4>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  {language === "hi"
-                    ? "WhatsApp पर सीधे संपर्क करें, बिचौलिया नहीं।"
-                    : "Contact artisan directly on WhatsApp — no middleman."}
-                </p>
-              </div>
-            </div>
+  // Buyer / unauthenticated landing
+  if (!profile) {
+    const hasWishlist = wishlist.length > 0;
+    return (
+      <MobileShell>
+        <div className="p-4 space-y-4">
 
-            <div className="flex items-start gap-3 p-3 rounded-xl bg-white border border-slate-200/80 shadow-xs">
-              <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
-                <DollarSign className="w-4 h-4" />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-slate-900">
-                  {language === "hi" ? "पारदर्शी उचित मूल्य" : "Fair & Transparent Pricing"}
-                </h4>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  {language === "hi"
-                    ? "AI-समर्थित उचित मूल्य — कारीगर को पूरा लाभ।"
-                    : "AI-verified fair prices — artisan keeps the full margin."}
-                </p>
-              </div>
+          {/* ── Header ──────────────────────────────────────────────── */}
+          <div className="flex items-center gap-3 pt-2">
+            <div className="w-10 h-10 rounded-xl bg-orange-100 text-terracotta-700 flex items-center justify-center shrink-0">
+              <ShoppingBag className="w-5 h-5" />
             </div>
-
-            <div className="flex items-start gap-3 p-3 rounded-xl bg-white border border-slate-200/80 shadow-xs">
-              <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
-                <Languages className="w-4 h-4" />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-slate-900">
-                  {language === "hi" ? "हिंदी + अंग्रेजी में जानकारी" : "Hindi + English Details"}
-                </h4>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  {language === "hi"
-                    ? "हर उत्पाद की जानकारी दोनों भाषाओं में।"
-                    : "Every product described in both languages for clarity."}
-                </p>
-              </div>
+            <div>
+              <h1 className="text-base font-extrabold text-slate-900 leading-tight">
+                {language === "hi" ? "KarigarAI बाजार" : "KarigarAI Marketplace"}
+              </h1>
+              <p className="text-[11px] text-slate-500">
+                {language === "hi" ? "हस्तशिल्प • सीधे कारीगर से" : "Handcrafts • Direct from Artisan"}
+              </p>
             </div>
           </div>
 
-          {/* ── Wishlist Section ────────────────────────────────────── */}
-          {wishlist.length > 0 && (
-            <div className="w-full space-y-3 text-left">
+          {/* ── Wishlist (shown first when items exist) ──────────────── */}
+          {hasWishlist ? (
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
                   <Heart className="w-3.5 h-3.5 fill-rose-500 stroke-rose-500" />
-                  {language === "hi" ? "आपकी सेव्ड लिस्ट" : "Your Saved Products"}
+                  {language === "hi" ? "सेव्ड उत्पाद" : "Saved Products"}
                 </h2>
                 <span className="text-[10px] font-bold text-rose-500 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
                   {wishlist.length}
@@ -141,7 +107,6 @@ export default function HomePage() {
                     key={item.id}
                     className="flex items-center gap-3 p-3 rounded-xl bg-white border border-slate-200/80 shadow-xs"
                   >
-                    {/* Product thumbnail */}
                     <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-200">
                       {item.image_url ? (
                         <img
@@ -156,7 +121,6 @@ export default function HomePage() {
                       )}
                     </div>
 
-                    {/* Info */}
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-bold text-slate-900 truncate leading-tight">
                         {language === "hi" ? item.title_hi : item.title_en}
@@ -169,12 +133,11 @@ export default function HomePage() {
                       </p>
                     </div>
 
-                    {/* Actions */}
                     <div className="flex flex-col items-center gap-1.5 shrink-0">
                       <Link href={`/p/${item.slug}`}>
                         <button
                           type="button"
-                          title={language === "hi" ? "देखें" : "View"}
+                          title={language === "hi" ? "देखें" : "View product"}
                           className="w-8 h-8 rounded-lg bg-orange-50 text-terracotta-700 flex items-center justify-center hover:bg-orange-100 transition-colors border border-orange-200"
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
@@ -196,27 +159,65 @@ export default function HomePage() {
                 ))}
               </div>
             </div>
+          ) : (
+            /* Empty wishlist — show how-it-works info cards */
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 p-3 rounded-xl bg-rose-50 border border-rose-200/80">
+                <Heart className="w-4 h-4 text-rose-400 shrink-0" />
+                <p className="text-xs text-rose-700 font-semibold">
+                  {language === "hi"
+                    ? "किसी उत्पाद पर ❤️ दबाएं और वह यहाँ सेव हो जाएगा।"
+                    : "Tap ❤️ on any product page to save it here for later."}
+                </p>
+              </div>
+
+              {[
+                {
+                  bg: "bg-orange-100 text-terracotta-700",
+                  icon: <Camera className="w-4 h-4" />,
+                  title: language === "hi" ? "सीधे कारीगर से खरीदें" : "Buy Direct from Artisan",
+                  desc: language === "hi"
+                    ? "WhatsApp पर सीधे संपर्क — बिचौलिया नहीं।"
+                    : "Contact artisan directly on WhatsApp. No middleman.",
+                },
+                {
+                  bg: "bg-emerald-100 text-emerald-700",
+                  icon: <DollarSign className="w-4 h-4" />,
+                  title: language === "hi" ? "उचित पारदर्शी मूल्य" : "Fair & Transparent Pricing",
+                  desc: language === "hi"
+                    ? "AI-समर्थित उचित मूल्य — कारीगर को पूरा लाभ।"
+                    : "AI-verified fair prices — artisan keeps the full margin.",
+                },
+                {
+                  bg: "bg-blue-100 text-blue-700",
+                  icon: <Languages className="w-4 h-4" />,
+                  title: language === "hi" ? "हिंदी + अंग्रेजी" : "Hindi + English",
+                  desc: language === "hi"
+                    ? "हर उत्पाद की जानकारी दोनों भाषाओं में।"
+                    : "Every product described in both languages.",
+                },
+              ].map((card, i) => (
+                <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-white border border-slate-200/80 shadow-xs">
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${card.bg}`}>
+                    {card.icon}
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-900">{card.title}</h4>
+                    <p className="text-xs text-slate-500 mt-0.5">{card.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
 
-          {/* ── Artisan CTA ─────────────────────────────────────────── */}
-          <div className="w-full pt-2 space-y-2">
-            <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-wide">
-              {language === "hi" ? "क्या आप एक कारीगर हैं?" : "Are you an artisan?"}
-            </p>
-            <Link href="/onboarding" className="block">
-              <Button variant="default" size="lg" fullWidth className="shadow-lg shadow-orange-700/20">
-                <LogIn className="w-4 h-4 mr-2" />
-                <span>
-                  {language === "hi" ? "कारीगर के रूप में पंजीकरण करें" : "Register as Artisan"}
-                </span>
-              </Button>
+          {/* ── Artisan CTA — subtle, at bottom ─────────────────────── */}
+          <div className="border-t border-slate-200 pt-3 flex items-center justify-center gap-2">
+            <LogIn className="w-3.5 h-3.5 text-slate-400" />
+            <Link href="/onboarding" className="text-xs font-semibold text-slate-500 hover:text-terracotta-700 transition-colors">
+              {language === "hi" ? "क्या आप कारीगर हैं? यहाँ पंजीकरण करें →" : "Are you an artisan? Register here →"}
             </Link>
-            <p className="text-[10px] text-slate-400">
-              {language === "hi"
-                ? "3 मिनट में अपना डिजिटल स्टॉल खोलें — बिल्कुल मुफ्त।"
-                : "Open your digital stall in 3 minutes — completely free."}
-            </p>
           </div>
+
         </div>
       </MobileShell>
     );
