@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #fdfbf7;
+  --foreground: #0f172a;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Accessible focus ring */
+*:focus-visible {
+  outline: 2px solid #ea580c;
+  outline-offset: 2px;
+}
+
+/* Mobile-first viewport container */
+.mobile-container {
+  width: 100%;
+  max-width: 448px; /* max-w-md */
+  margin-left: auto;
+  margin-right: auto;
+  min-height: 100vh;
+  background-color: #ffffff;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+}
