@@ -30,6 +30,8 @@ import {
 import { CompressionResult } from "@/lib/image/compression";
 import { generateCompleteCatalogPipelineAction } from "@/app/actions/catalog";
 import { processImageStudioAction } from "@/app/actions/image-studio";
+import { publishProductAction } from "@/app/actions/publish-product";
+import { QrModal } from "@/components/market";
 import { CatalogGenerationResult } from "@/lib/ai/schemas/catalog";
 import { ProductAnalysisResult } from "@/lib/ai/schemas/product-analysis";
 import { formatINR, generateSlug } from "@/lib/utils";
@@ -46,6 +48,7 @@ import {
   DollarSign,
   Share2,
   Check,
+  QrCode,
 } from "lucide-react";
 
 export default function NewProductPage() {
@@ -82,6 +85,7 @@ export default function NewProductPage() {
   // Publishing State
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishedSlug, setPublishedSlug] = useState<string | null>(null);
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [craftStory, setCraftStory] = useState<CraftStoryData | null>(null);
 
   // Active image used for downstream cataloging and display
@@ -156,39 +160,56 @@ export default function NewProductPage() {
   };
 
   // Final Publish Handler
-  const handlePublishListing = () => {
+  const handlePublishListing = async () => {
     setIsPublishing(true);
-    const slug = generateSlug(catalogResult?.titleEnglish || "craft-product");
-    
-    // Save to local products catalog storage for demo persistence
+    const initialSlug = generateSlug(catalogResult?.titleEnglish || "craft-product");
+    let finalSlug = initialSlug;
+
+    const payload = {
+      slug: initialSlug,
+      title_en: catalogResult?.titleEnglish || "Handcrafted Product",
+      title_hi: catalogResult?.titleHindi || "हस्तनिर्मित उत्पाद",
+      description_en: catalogResult?.descriptionEnglish || "",
+      description_hi: catalogResult?.descriptionHindi || "",
+      category: visionResult?.category || "Handicraft",
+      craft_type: visionResult?.craftType || profile?.craft_type || "Traditional Craft",
+      material: visionResult?.primaryMaterial || "Natural Material",
+      visual_attributes: visionResult?.visualAttributes ? { attributes: visionResult.visualAttributes } : {},
+      original_image_url: imageResult?.base64 || "",
+      processed_image_url: studioProcessedBase64 || null,
+      base_cost: confirmedPricing?.baseCost || 0,
+      price_min: confirmedPricing?.priceMin || 0,
+      price_max: confirmedPricing?.priceMax || 0,
+      suggested_price: confirmedPricing?.suggestedPrice || 0,
+      pricing_reasoning_en: confirmedPricing?.reasoningEn || null,
+      pricing_reasoning_hi: confirmedPricing?.reasoningHi || null,
+      tags: catalogResult?.tagsEnglish || [],
+      tags_hi: catalogResult?.tagsHindi || [],
+      artisan: profile,
+      craft_story: craftStory,
+    };
+
+    // 1. Persist to Supabase cloud database via Server Action
+    try {
+      const res = await publishProductAction(payload);
+      if (res.success && res.slug) {
+        finalSlug = res.slug;
+      }
+    } catch (cloudErr) {
+      console.warn("Cloud publishing failed, continuing with local fallback:", cloudErr);
+    }
+
+    // 2. Save to local products catalog storage for demo & offline persistence
     try {
       const existing = JSON.parse(localStorage.getItem("karigarai_saved_products") || "[]");
       const newProduct = {
+        ...payload,
         id: `prod-${Date.now()}`,
         artisan_id: profile?.id || "00000000-0000-0000-0000-000000000001",
-        slug,
-        title_en: catalogResult?.titleEnglish || "Handcrafted Product",
-        title_hi: catalogResult?.titleHindi || "हस्तनिर्मित उत्पाद",
-        description_en: catalogResult?.descriptionEnglish || "",
-        description_hi: catalogResult?.descriptionHindi || "",
-        category: visionResult?.category || "Handicraft",
-        craft_type: visionResult?.craftType || profile?.craft_type || "Traditional Craft",
-        material: visionResult?.primaryMaterial || "Natural Material",
-        original_image_url: imageResult?.base64 || "",
-        processed_image_url: studioProcessedBase64 || null,
-        base_cost: confirmedPricing?.baseCost || 0,
-        price_min: confirmedPricing?.priceMin || 0,
-        price_max: confirmedPricing?.priceMax || 0,
-        suggested_price: confirmedPricing?.suggestedPrice || 0,
-        pricing_reasoning_en: confirmedPricing?.reasoningEn || null,
-        pricing_reasoning_hi: confirmedPricing?.reasoningHi || null,
+        slug: finalSlug,
         status: "published",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        tags: catalogResult?.tagsEnglish || [],
-        tags_hi: catalogResult?.tagsHindi || [],
-        artisan: profile,
-        craft_story: craftStory,
       };
 
       existing.unshift(newProduct);
@@ -197,10 +218,8 @@ export default function NewProductPage() {
       console.warn("Storage save error:", err);
     }
 
-    setTimeout(() => {
-      setIsPublishing(false);
-      setPublishedSlug(slug);
-    }, 600);
+    setIsPublishing(false);
+    setPublishedSlug(finalSlug);
   };
 
   return (
@@ -599,10 +618,10 @@ export default function NewProductPage() {
                   <h3 className="text-base font-bold text-slate-900">
                     {language === "hi" ? "बधाई! आपका उत्पाद बाजार में लाइव है" : "Congratulations! Your Product is Live"}
                   </h3>
-                  <p className="text-xs text-slate-500 mt-1 max-w-[280px] mx-auto">
+                  <p className="text-xs text-slate-500 mt-1 max-w-[280px] mx-auto leading-relaxed">
                     {language === "hi"
-                      ? "अब कोई भी ग्राहक इस लिंक से आपका उत्पाद देख सकता है और सीधे व्हाट्सएप पर ऑर्डर कर सकता है।"
-                      : "Buyers can now view your product and order directly via WhatsApp."}
+                      ? "अब कोई भी ग्राहक इस लिंक या QR कोड से आपका उत्पाद देख सकता है और सीधे व्हाट्सएप पर ऑर्डर कर सकता है।"
+                      : "Buyers can now view your product via this link or QR code and order directly via WhatsApp."}
                   </p>
                 </div>
 
@@ -611,6 +630,19 @@ export default function NewProductPage() {
                 </div>
 
                 <div className="space-y-2 pt-2">
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    fullWidth
+                    onClick={() => setIsQrModalOpen(true)}
+                    className="border border-orange-200 bg-orange-50/70 text-terracotta-800 hover:bg-orange-100/80 font-bold"
+                  >
+                    <QrCode className="w-4 h-4 mr-1.5 text-terracotta-700" />
+                    <span>
+                      {language === "hi" ? "स्टॉल QR कोड देखें / प्रिंट करें" : "View / Print Stall QR Card"}
+                    </span>
+                  </Button>
+
                   <Link href={`/p/${publishedSlug}`} className="block">
                     <Button variant="default" size="md" fullWidth>
                       <span>{language === "hi" ? "पब्लिक पेज देखें" : "View Public Page"}</span>
@@ -618,12 +650,42 @@ export default function NewProductPage() {
                     </Button>
                   </Link>
 
-                  <Link href="/" className="block">
-                    <Button variant="outline" size="sm" fullWidth>
-                      <span>{t("navHome")}</span>
-                    </Button>
-                  </Link>
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <Link href="/products" className="block">
+                      <Button variant="outline" size="sm" fullWidth>
+                        <span>{language === "hi" ? "मेरा कैटलॉग" : "My Products"}</span>
+                      </Button>
+                    </Link>
+
+                    <Link href="/" className="block">
+                      <Button variant="outline" size="sm" fullWidth>
+                        <span>{t("navHome")}</span>
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
+
+                {/* Stall QR Code Modal */}
+                {publishedSlug && (
+                  <QrModal
+                    isOpen={isQrModalOpen}
+                    onClose={() => setIsQrModalOpen(false)}
+                    url={
+                      typeof window !== "undefined"
+                        ? `${window.location.origin}/p/${publishedSlug}`
+                        : `https://karigarai.app/p/${publishedSlug}`
+                    }
+                    productTitle={
+                      language === "hi"
+                        ? catalogResult?.titleHindi || "हस्तनिर्मित उत्पाद"
+                        : catalogResult?.titleEnglish || "Handcrafted Product"
+                    }
+                    artisanName={profile?.full_name}
+                    craftType={visionResult?.craftType || profile?.craft_type}
+                    price={confirmedPricing?.suggestedPrice || confirmedPricing?.priceMin}
+                    lang={language}
+                  />
+                )}
               </Card>
             )}
           </div>

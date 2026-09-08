@@ -26,6 +26,7 @@ import {
 import { FullProductWithDetails } from "@/types/product";
 import {
   getCatalogProducts,
+  fetchCatalogProducts,
   buildArtisanBroadcastUrl,
 } from "@/lib/data/products";
 import { formatINR, formatLocalizedText } from "@/lib/utils";
@@ -40,10 +41,19 @@ export default function ArtisanProductsPage() {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    // Load products combining localStorage and benchmark items
-    const all = getCatalogProducts();
-    setProducts(all);
+    // 1. Instantly display local storage & benchmark items
+    const initial = getCatalogProducts();
+    setProducts(initial);
     setIsLoaded(true);
+
+    // 2. Fetch and merge Supabase cloud listings asynchronously
+    fetchCatalogProducts()
+      .then((cloudProducts) => {
+        setProducts(cloudProducts);
+      })
+      .catch((err) => {
+        console.warn("fetchCatalogProducts error:", err);
+      });
   }, []);
 
   const filteredProducts = products.filter((p) => {

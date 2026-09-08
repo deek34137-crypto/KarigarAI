@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getProductBySlugOrId } from "@/lib/data/products";
-import { PublicProductView } from "@/components/market";
+import { PublicProductView, ClientProductFallback } from "@/components/market";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -52,7 +52,7 @@ export default async function PublicProductPage({ params }: PageProps) {
   const product = await getProductBySlugOrId(slug);
 
   if (!product) {
-    notFound();
+    return <ClientProductFallback slug={slug} />;
   }
 
   return <PublicProductView product={product} />;

@@ -149,20 +149,64 @@ export async function getProductBySlugOrId(
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     if (supabaseUrl && supabaseAnonKey) {
-      const { createClient } = await import("@/lib/supabase/client");
-      const supabase = createClient();
-      const { data, error } = await supabase
+      let client: any;
+      if (typeof window === "undefined") {
+        const { createAdminClient } = await import("@/lib/supabase/admin");
+        client = createAdminClient();
+      } else {
+        const { createClient } = await import("@/lib/supabase/client");
+        client = createClient();
+      }
+
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(key);
+
+      let query = client
         .from("products")
-        .select("*, artisan:profiles(*)")
-        .or(`slug.eq.${key},id.eq.${key}`)
-        .maybeSingle();
+        .select("*, artisan:profiles(*), craft_stories(*), product_tags(*)");
+
+      if (isUuid) {
+        query = query.or(`slug.eq.${key},id.eq.${key}`);
+      } else {
+        query = query.eq("slug", key);
+      }
+
+      const { data, error } = await query.maybeSingle();
 
       if (!error && data) {
-        return data as unknown as FullProductWithDetails;
+        const raw = data as any;
+        const rawStory = Array.isArray(raw.craft_stories)
+          ? raw.craft_stories[0] || null
+          : raw.craft_stories || null;
+
+        let formattedStory = null;
+        if (rawStory) {
+          formattedStory = {
+            id: rawStory.id,
+            product_id: rawStory.product_id,
+            artisan_story_raw: rawStory.artisan_story_raw || "",
+            story_en: rawStory.story_en || "",
+            story_hi: rawStory.story_hi || "",
+            traditional_process: rawStory.traditional_process
+              ? (typeof rawStory.traditional_process === "string"
+                  ? rawStory.traditional_process.split("\n").filter(Boolean)
+                  : rawStory.traditional_process)
+              : null,
+            generational_lineage: rawStory.generational_lineage || null,
+            story_source: "artisan_provided" as const,
+            created_at: rawStory.created_at,
+          };
+        }
+
+        return {
+          ...raw,
+          craft_story: formattedStory,
+          tags: raw.product_tags || [],
+        } as FullProductWithDetails;
       }
     }
-  } catch {
+  } catch (err) {
     // Supabase unavailable or network offline — proceed to demo fallbacks
+    console.warn("Supabase query fallback:", err);
   }
 
   // 2. Check browser session storage (for newly published products during demo)
@@ -216,6 +260,73 @@ export function getCatalogProducts(): FullProductWithDetails[] {
       idMap.set(p.id, p);
     }
   });
+
+  return Array.from(idMap.values());
+}
+
+/**
+ * Asynchronously fetches catalog products combining Supabase cloud items,
+ * local storage drafts, and benchmark demo products.
+ */
+export async function fetchCatalogProducts(): Promise<FullProductWithDetails[]> {
+  const localItems = getCatalogProducts();
+  const idMap = new Map<string, FullProductWithDetails>();
+  
+  // Seed with benchmark & local items
+  localItems.forEach((p) => idMap.set(p.id, p));
+
+  try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (supabaseUrl && supabaseAnonKey) {
+      let client: any;
+      if (typeof window === "undefined") {
+        const { createAdminClient } = await import("@/lib/supabase/admin");
+        client = createAdminClient();
+      } else {
+        const { createClient } = await import("@/lib/supabase/client");
+        client = createClient();
+      }
+
+      const { data, error } = await client
+        .from("products")
+        .select("*, artisan:profiles(*), craft_stories(*), product_tags(*)")
+        .order("created_at", { ascending: false });
+
+      if (!error && data) {
+        data.forEach((raw: any) => {
+          const rawStory = Array.isArray(raw.craft_stories)
+            ? raw.craft_stories[0] || null
+            : raw.craft_stories || null;
+
+          const item: FullProductWithDetails = {
+            ...raw,
+            craft_story: rawStory
+              ? {
+                  id: rawStory.id,
+                  product_id: rawStory.product_id,
+                  artisan_story_raw: rawStory.artisan_story_raw || "",
+                  story_en: rawStory.story_en || "",
+                  story_hi: rawStory.story_hi || "",
+                  traditional_process: rawStory.traditional_process
+                    ? (typeof rawStory.traditional_process === "string"
+                        ? rawStory.traditional_process.split("\n").filter(Boolean)
+                        : rawStory.traditional_process)
+                    : null,
+                  generational_lineage: rawStory.generational_lineage || null,
+                  story_source: "artisan_provided" as const,
+                  created_at: rawStory.created_at,
+                }
+              : null,
+            tags: raw.product_tags || [],
+          };
+          idMap.set(item.id, item);
+        });
+      }
+    }
+  } catch (err) {
+    console.warn("fetchCatalogProducts fallback:", err);
+  }
 
   return Array.from(idMap.values());
 }

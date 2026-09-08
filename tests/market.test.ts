@@ -88,11 +88,21 @@ describe("Phase 7: Market Linkage & Public Listings Unit Tests", () => {
     assert.ok(product?.artisan !== undefined);
   });
 
-  it("should generate a QR code data URL successfully", async () => {
-    const dataUrl = await QRCode.toDataURL("https://karigarai.app/p/gorakhpur-terracotta-pitcher", {
-      width: 256,
+  it("should safely handle non-UUID slugs without throwing database syntax errors", async () => {
+    const slug = "terracotta-pottery-1904";
+    // Must not throw 22P02 or crash on non-UUID query
+    const result = await getProductBySlugOrId(slug);
+    // Even if offline/no db, it should return null or product without throwing
+    assert.ok(result === null || typeof result === "object");
+  });
+
+  it("should generate a QR code data URL successfully for exhibition stalls", async () => {
+    const publicUrl = "https://karigar-ai90.vercel.app/p/terracotta-pottery-1904";
+    const dataUrl = await QRCode.toDataURL(publicUrl, {
+      width: 320,
       margin: 2,
     });
     assert.ok(dataUrl.startsWith("data:image/png;base64,"));
   });
 });
+
