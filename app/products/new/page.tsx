@@ -591,11 +591,11 @@ export default function NewProductPage() {
                 </div>
 
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-700 break-all">
-                  /products/{publishedSlug}
+                  /p/{publishedSlug}
                 </div>
 
                 <div className="space-y-2 pt-2">
-                  <Link href={`/products/${publishedSlug}`} className="block">
+                  <Link href={`/p/${publishedSlug}`} className="block">
                     <Button variant="default" size="md" fullWidth>
                       <span>{language === "hi" ? "पब्लिक पेज देखें" : "View Public Page"}</span>
                       <ArrowRight className="w-4 h-4 ml-1.5" />

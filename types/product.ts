@@ -20,4 +20,5 @@ export interface FullProductWithDetails extends Product {
   artisan?: Profile;
   tags?: ProductTag[];
   craft_story?: CraftStory | null;
+  is_demo?: boolean;
 }

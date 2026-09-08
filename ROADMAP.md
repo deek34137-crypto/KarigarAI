@@ -94,15 +94,16 @@ To ensure systematic progress, maximum reliability, and clear validation at ever
 
 ---
 
-### Phase 7: Public Listings & Market Linkage
-* **Objective:** Build the shareable, high-impact public product page and artisan catalog.
+### Phase 7: Public Listings & Market Linkage (✅ COMPLETED)
+* **Objective:** Build the shareable, high-impact public product page, exhibition stall QR linkage, and artisan catalog dashboard.
 * **Tasks:**
-  1. Build public page at `/products/[slug]` using Next.js Server Components for maximum SEO and speed.
-  2. Generate SEO meta tags, OpenGraph previews, and Twitter cards.
-  3. Implement direct "Inquire on WhatsApp" CTA with pre-filled message containing product title and link.
-  4. Implement Web Share API button with fallback copy-link toast.
-  5. Build artisan public profile summary showing craft heritage badge and district.
-* **Acceptance Criteria:** Anyone can view `/products/[slug]` without logging in; clicking WhatsApp opens mobile WhatsApp with correct link; RLS allows public reads for published products only.
+  1. Build public shareable listing at `/p/[slug]` using Next.js Server Components for maximum SEO, fast load, and dynamic OpenGraph cards for WhatsApp link previews.
+  2. Implement direct "Inquire on WhatsApp" CTA (`wa.me`) with dynamic artisan phone resolution and pre-filled bilingual inquiry message.
+  3. Implement Exhibition Stall QR Card generator (`QrModal`) for physical-to-digital market linkage at craft melas (Surajkund, Dastkar, SARAS Aajeevika).
+  4. Build Artisan Catalog Dashboard at `/products` with status filtering (`all`, `published`, `draft`), WhatsApp broadcast share, and copy link actions.
+  5. Build authenticated product management view at `/products/[id]`.
+  6. Honest UI design: labeled as "Artisan Profile" / "Craft Information" without unverified claims; demo seed items labeled "Demo Product".
+* **Acceptance Criteria:** Anyone can view `/p/[slug]` without logging in; clicking WhatsApp opens mobile WhatsApp with correct link; QR code generates crisp stall cards; 100% automated test pass.
 * **Dependencies:** Phase 5, Phase 6.
 
 ---
