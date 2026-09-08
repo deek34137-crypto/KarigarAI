@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/lib/i18n/context";
@@ -28,6 +28,7 @@ import {
   Skeleton,
 } from "@/components/ui";
 import { CompressionResult } from "@/lib/image/compression";
+import { processCraftStudioImage } from "@/lib/image/studio-processor";
 import { generateCompleteCatalogPipelineAction } from "@/app/actions/catalog";
 import { processImageStudioAction } from "@/app/actions/image-studio";
 import { publishProductAction } from "@/app/actions/publish-product";
@@ -103,29 +104,67 @@ export default function NewProductPage() {
     setCurrentStep((prev) => Math.max(prev - 1, 1));
   };
 
-  // Run AI Image Studio
+  // Run AI Image Studio with robust client fallback
   const handleProcessImageStudio = async () => {
     if (!imageResult) return;
 
     setIsProcessingStudio(true);
     try {
-      const res = await processImageStudioAction({
-        imageBase64: imageResult.base64,
-        removeBg: true,
-        quality: 85,
-      });
+      let finalProcessedBase64 = "";
+      let finalBgRemoved = false;
 
-      if (res.success && res.processedBase64) {
-        setStudioProcessedBase64(res.processedBase64);
-        setStudioBgRemoved(res.bgRemoved);
-        setSelectedImageChoice("processed");
+      // 1. Try server-side rembg python process if available
+      try {
+        const res = await processImageStudioAction({
+          imageBase64: imageResult.base64,
+          removeBg: true,
+          quality: 85,
+        });
+
+        if (
+          res.success &&
+          res.processedBase64 &&
+          res.processedBase64 !== imageResult.base64
+        ) {
+          finalProcessedBase64 = res.processedBase64;
+          finalBgRemoved = res.bgRemoved;
+        }
+      } catch (srvErr) {
+        console.warn("Server image studio unavailable, using client studio:", srvErr);
       }
+
+      // 2. Client-side canvas studio processor (guaranteed on Vercel & mobile)
+      if (!finalProcessedBase64) {
+        const studioRes = await processCraftStudioImage(imageResult.base64);
+        finalProcessedBase64 = studioRes.base64;
+        finalBgRemoved = false;
+      }
+
+      setStudioProcessedBase64(finalProcessedBase64);
+      setStudioBgRemoved(finalBgRemoved);
+      setSelectedImageChoice("processed");
     } catch (err) {
       console.warn("Image studio processing failed:", err);
     } finally {
       setIsProcessingStudio(false);
     }
   };
+
+  // Ensure processed studio image is visibly distinct and never identical to the raw photo
+  useEffect(() => {
+    if (
+      studioProcessedBase64 &&
+      imageResult?.base64 &&
+      studioProcessedBase64 === imageResult.base64
+    ) {
+      processCraftStudioImage(imageResult.base64)
+        .then((res) => {
+          setStudioProcessedBase64(res.base64);
+          setStudioBgRemoved(false);
+        })
+        .catch((e) => console.warn("Auto-enhance fallback error:", e));
+    }
+  }, [studioProcessedBase64, imageResult]);
 
   // Run Gemini Multimodal Catalog Pipeline
   const handleGenerateAiCatalog = async () => {
