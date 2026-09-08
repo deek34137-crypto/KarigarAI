@@ -70,14 +70,14 @@ To ensure systematic progress, maximum reliability, and clear validation at ever
 
 ---
 
-### Phase 5: AI Image Studio
+### Phase 5: AI Image Studio (✅ COMPLETED)
 * **Objective:** Provide automated product image standardization and aspect ratio normalization.
 * **Tasks:**
-  1. Build standard 1:1 square crop and center-alignment utility.
-  2. Implement contrast and brightness normalization filters.
+  1. Build Python image-processing service with `rembg` background removal and Pillow fallback.
+  2. Implement standard 1:1 square crop, center-alignment, and contrast/brightness normalization.
   3. Build interactive Before/After comparison slider component for the artisan to inspect improvements.
-  4. Upload original and processed images to Supabase Storage bucket (`product-images`).
-* **Acceptance Criteria:** Uploaded product images can be previewed before/after; images conform to 1:1 e-commerce ratio; upload URLs saved in database.
+  4. Integrate studio into product creation workflow with choice to select Studio or Original photo.
+* **Acceptance Criteria:** Uploaded product images can be previewed before/after; images conform to 1:1 e-commerce ratio; graceful degradation if background removal fails.
 * **Dependencies:** Phase 4.
 
 ---

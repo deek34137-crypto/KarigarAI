@@ -11,6 +11,7 @@ import {
   PhotoCapture,
   VoiceInput,
 } from "@/components/product";
+import { BeforeAfterSlider } from "@/components/image-studio";
 import { BilingualPreview } from "@/components/catalog";
 import {
   Button,
@@ -25,6 +26,7 @@ import {
 } from "@/components/ui";
 import { CompressionResult } from "@/lib/image/compression";
 import { generateCompleteCatalogPipelineAction } from "@/app/actions/catalog";
+import { processImageStudioAction } from "@/app/actions/image-studio";
 import { CatalogGenerationResult } from "@/lib/ai/schemas/catalog";
 import { ProductAnalysisResult } from "@/lib/ai/schemas/product-analysis";
 import {
@@ -36,6 +38,7 @@ import {
   AlertCircle,
   Loader2,
   RefreshCw,
+  Wand2,
 } from "lucide-react";
 
 export default function NewProductPage() {
@@ -47,11 +50,23 @@ export default function NewProductPage() {
   const [imageResult, setImageResult] = useState<CompressionResult | null>(null);
   const [oralDescription, setOralDescription] = useState("");
 
-  // AI Pipeline State
+  // AI Image Studio State (Phase 5)
+  const [studioProcessedBase64, setStudioProcessedBase64] = useState<string | null>(null);
+  const [isProcessingStudio, setIsProcessingStudio] = useState(false);
+  const [studioBgRemoved, setStudioBgRemoved] = useState(false);
+  const [selectedImageChoice, setSelectedImageChoice] = useState<"original" | "processed">("original");
+
+  // AI Catalog State (Phase 4)
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const [catalogResult, setCatalogResult] = useState<CatalogGenerationResult | null>(null);
   const [visionResult, setVisionResult] = useState<ProductAnalysisResult | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
+
+  // Active image used for downstream cataloging and display
+  const activeImageBase64 =
+    selectedImageChoice === "processed" && studioProcessedBase64
+      ? studioProcessedBase64
+      : imageResult?.base64 || "";
 
   const handleNext = () => {
     if (currentStep === 1 && !imageResult) return;
@@ -62,15 +77,40 @@ export default function NewProductPage() {
     setCurrentStep((prev) => Math.max(prev - 1, 1));
   };
 
-  const handleGenerateAiCatalog = async () => {
+  // Run AI Image Studio: Background Removal & 1:1 Normalization
+  const handleProcessImageStudio = async () => {
     if (!imageResult) return;
+
+    setIsProcessingStudio(true);
+    try {
+      const res = await processImageStudioAction({
+        imageBase64: imageResult.base64,
+        removeBg: true,
+        quality: 85,
+      });
+
+      if (res.success && res.processedBase64) {
+        setStudioProcessedBase64(res.processedBase64);
+        setStudioBgRemoved(res.bgRemoved);
+        setSelectedImageChoice("processed");
+      }
+    } catch (err) {
+      console.warn("Image studio processing failed:", err);
+    } finally {
+      setIsProcessingStudio(false);
+    }
+  };
+
+  // Run Gemini Multimodal Catalog Pipeline
+  const handleGenerateAiCatalog = async () => {
+    if (!activeImageBase64) return;
 
     setIsGeneratingAi(true);
     setAiError(null);
 
     try {
       const res = await generateCompleteCatalogPipelineAction({
-        imageBase64: imageResult.base64,
+        imageBase64: activeImageBase64,
         artisanRawNote: oralDescription,
         craftHint: profile?.craft_type,
         craftCluster: `${profile?.district || "Gorakhpur"}, ${profile?.state || "India"}`,
@@ -122,7 +162,7 @@ export default function NewProductPage() {
         />
 
         {/* ========================================================================= */}
-        {/* STEP 1: PHOTO CAPTURE & COMPRESSION */}
+        {/* STEP 1: PHOTO CAPTURE & AI IMAGE STUDIO (PHASE 5) */}
         {/* ========================================================================= */}
         {currentStep === 1 && (
           <div className="space-y-4 animate-in fade-in duration-200">
@@ -130,15 +170,52 @@ export default function NewProductPage() {
               imageResult={imageResult}
               onImageCaptured={(res) => {
                 setImageResult(res);
-                // Reset previously generated AI catalog if image changes
+                setStudioProcessedBase64(null);
+                setSelectedImageChoice("original");
                 setCatalogResult(null);
                 setVisionResult(null);
               }}
               onImageRemoved={() => {
                 setImageResult(null);
+                setStudioProcessedBase64(null);
+                setSelectedImageChoice("original");
                 setCatalogResult(null);
               }}
             />
+
+            {/* AI Image Studio Trigger & Before/After Comparison */}
+            {imageResult && (
+              <div className="pt-1">
+                {!studioProcessedBase64 ? (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="md"
+                    fullWidth
+                    onClick={handleProcessImageStudio}
+                    isLoading={isProcessingStudio}
+                    className="border border-saffron-300 shadow-xs"
+                  >
+                    <Wand2 className="w-4 h-4 mr-1.5 text-amber-700" />
+                    <span>
+                      {language === "hi"
+                        ? "AI स्टूडियो में साफ करें (बैकग्राउंड हटाएं)"
+                        : "Clean in AI Studio (Remove Background & 1:1)"}
+                    </span>
+                  </Button>
+                ) : (
+                  <Card className="p-3.5 space-y-3">
+                    <BeforeAfterSlider
+                      originalImage={imageResult.base64}
+                      processedImage={studioProcessedBase64}
+                      isBgRemoved={studioBgRemoved}
+                      selectedImage={selectedImageChoice}
+                      onSelectImage={(choice) => setSelectedImageChoice(choice)}
+                    />
+                  </Card>
+                )}
+              </div>
+            )}
 
             {/* Next Action */}
             <div className="pt-2">
@@ -163,20 +240,24 @@ export default function NewProductPage() {
         {/* ========================================================================= */}
         {currentStep === 2 && (
           <div className="space-y-4 animate-in fade-in duration-200">
-            {/* Thumbnail banner of captured image */}
-            {imageResult && (
+            {/* Active Thumbnail banner */}
+            {activeImageBase64 && (
               <div className="flex items-center gap-3 p-2.5 rounded-xl bg-orange-50/70 border border-orange-200/80 text-left">
                 <img
-                  src={imageResult.base64}
+                  src={activeImageBase64}
                   alt="Thumbnail"
-                  className="w-12 h-12 rounded-lg object-cover border border-orange-200 shrink-0"
+                  className="w-12 h-12 rounded-lg object-cover border border-orange-200 shrink-0 bg-white"
                 />
                 <div className="min-w-0 flex-1">
                   <span className="text-xs font-bold text-slate-900 block truncate">
-                    {language === "hi" ? "फोटो सुरक्षित है" : "Image Captured"}
+                    {selectedImageChoice === "processed"
+                      ? language === "hi" ? "स्टूडियो फोटो चयनित" : "Studio Photo Selected"
+                      : language === "hi" ? "मूल फोटो सुरक्षित है" : "Original Photo Selected"}
                   </span>
                   <span className="text-[10px] text-terracotta-700 font-semibold">
-                    {imageResult.sizeFormatted} • {imageResult.width}×{imageResult.height}px
+                    {selectedImageChoice === "processed"
+                      ? "1000×1000px • 1:1 Studio Standard"
+                      : `${imageResult?.sizeFormatted} • ${imageResult?.width}×${imageResult?.height}px`}
                   </span>
                 </div>
                 <button
@@ -213,7 +294,6 @@ export default function NewProductPage() {
                 size="md"
                 onClick={() => {
                   setCurrentStep(3);
-                  // Automatically trigger AI generation if not yet generated
                   if (!catalogResult) {
                     handleGenerateAiCatalog();
                   }
@@ -329,33 +409,38 @@ export default function NewProductPage() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm">
-                    {language === "hi" ? "मूल्य निर्धारण एवं प्रकाशन" : "Pricing & Final Publishing"}
+                    {language === "hi" ? "मूल्य निर्धारण एवं अंतिम समीक्षा" : "Pricing & Final Publishing"}
                   </CardTitle>
-                  <Badge variant="success">Phase 4 Complete</Badge>
+                  <Badge variant="success">Phase 5 Complete</Badge>
                 </div>
                 <CardDescription>
                   {language === "hi"
-                    ? "द्विभाषी कैटलॉग सुरक्षित है। अगले चरण में पारदर्शी मूल्य निर्धारण जोड़ा जाएगा।"
-                    : "Bilingual catalog is validated and ready for Phase 5 & 6."}
+                    ? "स्टूडियो फोटो एवं द्विभाषी विवरण तैयार हैं। अगले चरण में मूल्य निर्धारण जोड़ा जाएगा।"
+                    : "Studio photo & bilingual listing ready. Ready for Phase 6 pricing assistant."}
                 </CardDescription>
               </CardHeader>
 
               <CardContent className="space-y-3">
+                {/* Visual Preview with Studio Badge */}
+                <div className="relative rounded-xl overflow-hidden border border-slate-200 aspect-video bg-[#FAFAF9]">
+                  <img
+                    src={activeImageBase64}
+                    alt="Product Final Preview"
+                    className="w-full h-full object-contain"
+                  />
+                  <div className="absolute bottom-2 left-2">
+                    <Badge variant={selectedImageChoice === "processed" ? "success" : "neutral"}>
+                      {selectedImageChoice === "processed" ? "AI Studio Cleaned" : "Original Photo"}
+                    </Badge>
+                  </div>
+                </div>
+
                 <div className="p-3 rounded-xl bg-orange-50/70 border border-orange-200/80">
                   <span className="text-[10px] font-bold text-slate-500 uppercase block">
                     {catalogResult?.titleHindi}
                   </span>
                   <span className="text-xs font-extrabold text-slate-900 block mt-0.5">
                     {catalogResult?.titleEnglish}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2 text-xs font-bold text-emerald-800 bg-emerald-50 p-2.5 rounded-xl border border-emerald-200">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>
-                    {language === "hi"
-                      ? "AI कैटलॉग सफलतापूर्वक तैयार हो गया!"
-                      : "AI Catalog generated with 100% structured JSON validation!"}
                   </span>
                 </div>
               </CardContent>
@@ -369,7 +454,7 @@ export default function NewProductPage() {
                   disabled
                   className="opacity-90 cursor-default"
                 >
-                  <span>Phase 4 Ready — Standing by for Phase 5 & 6</span>
+                  <span>Phase 5 Complete — Standing by for Phase 6 Pricing</span>
                 </Button>
 
                 <Button
