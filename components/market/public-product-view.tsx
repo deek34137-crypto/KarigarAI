@@ -18,7 +18,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { FullProductWithDetails } from "@/types/product";
-import { formatINR } from "@/lib/utils";
+import { formatINR, formatLocalizedText, getLocalizedInitial } from "@/lib/utils";
 import { WhatsAppButton } from "./whatsapp-button";
 import { ShareButton } from "./share-button";
 import { QrModal } from "./qr-modal";
@@ -225,17 +225,17 @@ export function PublicProductView({ product }: PublicProductViewProps) {
 
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-terracotta-700 to-orange-500 text-white flex items-center justify-center font-extrabold text-base shadow-sm shrink-0">
-              {product.artisan?.full_name ? product.artisan.full_name.charAt(0) : "क"}
+              {getLocalizedInitial(product.artisan?.full_name, buyerLang)}
             </div>
             <div className="min-w-0 flex-1">
               <h3 className="text-sm font-bold text-slate-900 truncate">
-                {product.artisan?.full_name || (buyerLang === "hi" ? "शिल्पकार" : "Artisan")}
+                {formatLocalizedText(product.artisan?.full_name, buyerLang) || (buyerLang === "hi" ? "शिल्पकार" : "Artisan")}
               </h3>
               <div className="flex items-center gap-1 text-[11px] text-slate-600 font-medium">
                 <MapPin className="w-3.5 h-3.5 text-terracotta-700 shrink-0" />
                 <span className="truncate">
                   {product.artisan?.district
-                    ? `${product.artisan.district}, ${product.artisan.state || "India"}`
+                    ? `${formatLocalizedText(product.artisan.district, buyerLang)}, ${formatLocalizedText(product.artisan.state, buyerLang) || "India"}`
                     : "India"}
                 </span>
               </div>

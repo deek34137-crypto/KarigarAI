@@ -28,7 +28,7 @@ import {
   getCatalogProducts,
   buildArtisanBroadcastUrl,
 } from "@/lib/data/products";
-import { formatINR } from "@/lib/utils";
+import { formatINR, formatLocalizedText } from "@/lib/utils";
 import { QrModal, ShareButton } from "@/components/market";
 
 export default function ArtisanProductsPage() {
@@ -353,8 +353,8 @@ export default function ArtisanProductsPage() {
               ? selectedQrProduct.title_hi
               : selectedQrProduct.title_en
           }
-          artisanName={selectedQrProduct.artisan?.full_name || profile?.full_name}
-          craftType={selectedQrProduct.craft_type}
+          artisanName={formatLocalizedText(selectedQrProduct.artisan?.full_name || profile?.full_name, language)}
+          craftType={formatLocalizedText(selectedQrProduct.craft_type, language)}
           price={selectedQrProduct.suggested_price || selectedQrProduct.price_min}
           lang={language}
         />

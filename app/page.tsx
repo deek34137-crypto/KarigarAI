@@ -30,7 +30,7 @@ import {
   Layers,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
-import { formatINR } from "@/lib/utils";
+import { formatINR, formatLocalizedText, getLocalizedInitial } from "@/lib/utils";
 
 export default function HomePage() {
   const { language, t } = useLanguage();
@@ -57,14 +57,14 @@ export default function HomePage() {
           >
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="w-9 h-9 rounded-xl bg-terracotta-700 text-white flex items-center justify-center font-bold text-sm shrink-0">
-                {profile.full_name ? profile.full_name.charAt(0) : "क"}
+                {getLocalizedInitial(profile.full_name, language)}
               </div>
               <div className="min-w-0">
                 <span className="text-xs font-bold text-slate-900 block truncate">
-                  {profile.full_name}
+                  {formatLocalizedText(profile.full_name, language)}
                 </span>
                 <span className="text-[10px] text-terracotta-700 font-semibold block truncate">
-                  {profile.craft_type} • {profile.district || "Gorakhpur"}
+                  {formatLocalizedText(profile.craft_type, language)} • {formatLocalizedText(profile.district, language) || (language === "hi" ? "गोरखपुर" : "Gorakhpur")}
                 </span>
               </div>
             </div>

@@ -28,6 +28,7 @@ import {
   CheckCircle2,
   BookOpen,
 } from "lucide-react";
+import { formatLocalizedText, getLocalizedInitial } from "@/lib/utils";
 
 export default function ProfilePage() {
   const { language, t } = useLanguage();
@@ -88,12 +89,12 @@ export default function ProfilePage() {
         {/* Profile Card Header */}
         <div className="p-4 rounded-2xl bg-gradient-to-br from-orange-50/90 to-amber-50/50 border border-orange-200/70 shadow-xs flex items-center gap-3.5 text-left">
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-terracotta-700 to-orange-500 text-white flex items-center justify-center font-bold text-2xl shadow-sm shrink-0">
-            {profile?.full_name ? profile.full_name.charAt(0) : "क"}
+            {getLocalizedInitial(profile?.full_name, language)}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
               <h2 className="text-base font-extrabold text-slate-900 truncate">
-                {profile?.full_name || t("noProfileYet")}
+                {profile ? formatLocalizedText(profile.full_name, language) : t("noProfileYet")}
               </h2>
             </div>
             <div className="flex items-center gap-1 mt-1 text-emerald-700 text-xs font-bold">
@@ -113,7 +114,9 @@ export default function ProfilePage() {
                     <CardTitle className="text-sm">
                       {language === "hi" ? "शिल्पकार प्रोफ़ाइल विवरण" : "Artisan Profile Details"}
                     </CardTitle>
-                    <Badge variant="secondary">{profile.craft_type}</Badge>
+                    <Badge variant="secondary">
+                      {formatLocalizedText(profile.craft_type, language)}
+                    </Badge>
                   </div>
                 </CardHeader>
 
@@ -126,7 +129,7 @@ export default function ProfilePage() {
                         {language === "hi" ? "शिल्प क्लस्टर / क्षेत्र" : "Craft Cluster & Region"}
                       </span>
                       <span>
-                        {profile.district || "Gorakhpur"}, {profile.state || "Uttar Pradesh"}
+                        {formatLocalizedText(profile.district, language) || (language === "hi" ? "गोरखपुर" : "Gorakhpur")}, {formatLocalizedText(profile.state, language) || (language === "hi" ? "उत्तर प्रदेश" : "Uttar Pradesh")}
                       </span>
                     </div>
                   </div>
