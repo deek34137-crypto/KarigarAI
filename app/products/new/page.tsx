@@ -13,6 +13,7 @@ import {
 } from "@/components/product";
 import { BeforeAfterSlider } from "@/components/image-studio";
 import { BilingualPreview } from "@/components/catalog";
+import { PricingCalculator } from "@/components/pricing";
 import {
   Button,
   Card,
@@ -29,6 +30,7 @@ import { generateCompleteCatalogPipelineAction } from "@/app/actions/catalog";
 import { processImageStudioAction } from "@/app/actions/image-studio";
 import { CatalogGenerationResult } from "@/lib/ai/schemas/catalog";
 import { ProductAnalysisResult } from "@/lib/ai/schemas/product-analysis";
+import { formatINR, generateSlug } from "@/lib/utils";
 import {
   ArrowLeft,
   ArrowRight,
@@ -39,6 +41,9 @@ import {
   Loader2,
   RefreshCw,
   Wand2,
+  DollarSign,
+  Share2,
+  Check,
 } from "lucide-react";
 
 export default function NewProductPage() {
@@ -62,6 +67,20 @@ export default function NewProductPage() {
   const [visionResult, setVisionResult] = useState<ProductAnalysisResult | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
 
+  // Pricing State (Phase 6)
+  const [confirmedPricing, setConfirmedPricing] = useState<{
+    baseCost: number;
+    priceMin: number;
+    priceMax: number;
+    suggestedPrice: number;
+    reasoningEn: string;
+    reasoningHi: string;
+  } | null>(null);
+
+  // Publishing State
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [publishedSlug, setPublishedSlug] = useState<string | null>(null);
+
   // Active image used for downstream cataloging and display
   const activeImageBase64 =
     selectedImageChoice === "processed" && studioProcessedBase64
@@ -77,7 +96,7 @@ export default function NewProductPage() {
     setCurrentStep((prev) => Math.max(prev - 1, 1));
   };
 
-  // Run AI Image Studio: Background Removal & 1:1 Normalization
+  // Run AI Image Studio
   const handleProcessImageStudio = async () => {
     if (!imageResult) return;
 
@@ -131,6 +150,53 @@ export default function NewProductPage() {
     } finally {
       setIsGeneratingAi(false);
     }
+  };
+
+  // Final Publish Handler
+  const handlePublishListing = () => {
+    setIsPublishing(true);
+    const slug = generateSlug(catalogResult?.titleEnglish || "craft-product");
+    
+    // Save to local products catalog storage for demo persistence
+    try {
+      const existing = JSON.parse(localStorage.getItem("karigarai_saved_products") || "[]");
+      const newProduct = {
+        id: `prod-${Date.now()}`,
+        artisan_id: profile?.id || "00000000-0000-0000-0000-000000000001",
+        slug,
+        title_en: catalogResult?.titleEnglish || "Handcrafted Product",
+        title_hi: catalogResult?.titleHindi || "हस्तनिर्मित उत्पाद",
+        description_en: catalogResult?.descriptionEnglish || "",
+        description_hi: catalogResult?.descriptionHindi || "",
+        category: visionResult?.category || "Handicraft",
+        craft_type: visionResult?.craftType || profile?.craft_type || "Traditional Craft",
+        material: visionResult?.primaryMaterial || "Natural Material",
+        original_image_url: imageResult?.base64 || "",
+        processed_image_url: studioProcessedBase64 || null,
+        base_cost: confirmedPricing?.baseCost || 0,
+        price_min: confirmedPricing?.priceMin || 0,
+        price_max: confirmedPricing?.priceMax || 0,
+        suggested_price: confirmedPricing?.suggestedPrice || 0,
+        pricing_reasoning_en: confirmedPricing?.reasoningEn || null,
+        pricing_reasoning_hi: confirmedPricing?.reasoningHi || null,
+        status: "published",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        tags: catalogResult?.tagsEnglish || [],
+        tags_hi: catalogResult?.tagsHindi || [],
+        artisan: profile,
+      };
+
+      existing.unshift(newProduct);
+      localStorage.setItem("karigarai_saved_products", JSON.stringify(existing));
+    } catch (err) {
+      console.warn("Storage save error:", err);
+    }
+
+    setTimeout(() => {
+      setIsPublishing(false);
+      setPublishedSlug(slug);
+    }, 600);
   };
 
   return (
@@ -401,73 +467,149 @@ export default function NewProductPage() {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 4: PRICING ASSISTANT (PHASE 6 GATEWAY) */}
+        {/* STEP 4: TRANSPARENT PRICING ASSISTANT (PHASE 6) */}
         {/* ========================================================================= */}
         {currentStep === 4 && (
           <div className="space-y-4 animate-in fade-in duration-200 text-left">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm">
-                    {language === "hi" ? "मूल्य निर्धारण एवं अंतिम समीक्षा" : "Pricing & Final Publishing"}
-                  </CardTitle>
-                  <Badge variant="success">Phase 5 Complete</Badge>
+            {!publishedSlug ? (
+              !confirmedPricing ? (
+                /* Interactive Pricing Calculator */
+                <PricingCalculator
+                  craftType={visionResult?.craftType || profile?.craft_type}
+                  material={visionResult?.primaryMaterial}
+                  onPriceConfirmed={(pricingData) => setConfirmedPricing(pricingData)}
+                  onBack={handleBack}
+                />
+              ) : (
+                /* Ready to Publish Review Card */
+                <Card className="space-y-4 p-4">
+                  <CardHeader className="p-0 pb-2">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-base">
+                        {language === "hi" ? "अंतिम समीक्षा एवं प्रकाशन" : "Final Review & Publish"}
+                      </CardTitle>
+                      <Badge variant="success">Ready to Publish</Badge>
+                    </div>
+                    <CardDescription>
+                      {language === "hi"
+                        ? "1-टैप में सार्वजनिक बाजार लिंक और व्हाट्सएप शेयर पेज बनाएं।"
+                        : "Create shareable market link and direct WhatsApp buyer CTA."}
+                    </CardDescription>
+                  </CardHeader>
+
+                  <CardContent className="p-0 space-y-3">
+                    {/* Visual Preview */}
+                    <div className="relative rounded-xl overflow-hidden border border-slate-200 aspect-video bg-[#FAFAF9]">
+                      <img
+                        src={activeImageBase64}
+                        alt="Final Product Preview"
+                        className="w-full h-full object-contain"
+                      />
+                      <div className="absolute bottom-2 left-2">
+                        <Badge variant={selectedImageChoice === "processed" ? "success" : "neutral"}>
+                          {selectedImageChoice === "processed" ? "Studio Cleaned" : "Original Photo"}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {/* Bilingual Title */}
+                    <div className="p-3 rounded-xl bg-orange-50/70 border border-orange-200/80">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase block">
+                        {catalogResult?.titleHindi}
+                      </span>
+                      <span className="text-sm font-extrabold text-slate-900 block mt-0.5">
+                        {catalogResult?.titleEnglish}
+                      </span>
+                    </div>
+
+                    {/* Pricing Summary */}
+                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                      <div>
+                        <span className="text-[10px] font-bold text-slate-500 uppercase block">
+                          {language === "hi" ? "उत्पादन लागत" : "Base Cost"}
+                        </span>
+                        <span className="text-xs font-bold text-slate-700">
+                          {formatINR(confirmedPricing.baseCost)}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[10px] font-bold text-terracotta-700 uppercase block">
+                          {language === "hi" ? "तय विक्रय मूल्य" : "Selling Price"}
+                        </span>
+                        <span className="text-base font-extrabold text-terracotta-800">
+                          {formatINR(confirmedPricing.suggestedPrice)}
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+
+                  <CardFooter className="p-0 pt-2 flex flex-col gap-2">
+                    <Button
+                      type="button"
+                      variant="default"
+                      size="lg"
+                      fullWidth
+                      onClick={handlePublishListing}
+                      isLoading={isPublishing}
+                      className="shadow-md"
+                    >
+                      <Share2 className="w-4 h-4 mr-2" />
+                      <span>{language === "hi" ? "सार्वजनिक प्रकाशित करें" : "Publish to Market"}</span>
+                    </Button>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      fullWidth
+                      onClick={() => setConfirmedPricing(null)}
+                    >
+                      <span>{language === "hi" ? "मूल्य बदलें" : "Edit Pricing"}</span>
+                    </Button>
+                  </CardFooter>
+                </Card>
+              )
+            ) : (
+              /* Success Published Card with Link */
+              <Card className="text-center p-6 space-y-4">
+                <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto shadow-sm">
+                  <CheckCircle2 className="w-8 h-8 stroke-[2.2]" />
                 </div>
-                <CardDescription>
-                  {language === "hi"
-                    ? "स्टूडियो फोटो एवं द्विभाषी विवरण तैयार हैं। अगले चरण में मूल्य निर्धारण जोड़ा जाएगा।"
-                    : "Studio photo & bilingual listing ready. Ready for Phase 6 pricing assistant."}
-                </CardDescription>
-              </CardHeader>
 
-              <CardContent className="space-y-3">
-                {/* Visual Preview with Studio Badge */}
-                <div className="relative rounded-xl overflow-hidden border border-slate-200 aspect-video bg-[#FAFAF9]">
-                  <img
-                    src={activeImageBase64}
-                    alt="Product Final Preview"
-                    className="w-full h-full object-contain"
-                  />
-                  <div className="absolute bottom-2 left-2">
-                    <Badge variant={selectedImageChoice === "processed" ? "success" : "neutral"}>
-                      {selectedImageChoice === "processed" ? "AI Studio Cleaned" : "Original Photo"}
-                    </Badge>
-                  </div>
+                <div>
+                  <Badge variant="success" className="mb-2">
+                    {language === "hi" ? "उत्पाद लाइव है" : "Listing Published"}
+                  </Badge>
+                  <h3 className="text-base font-bold text-slate-900">
+                    {language === "hi" ? "बधाई! आपका उत्पाद बाजार में लाइव है" : "Congratulations! Your Product is Live"}
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-1 max-w-[280px] mx-auto">
+                    {language === "hi"
+                      ? "अब कोई भी ग्राहक इस लिंक से आपका उत्पाद देख सकता है और सीधे व्हाट्सएप पर ऑर्डर कर सकता है।"
+                      : "Buyers can now view your product and order directly via WhatsApp."}
+                  </p>
                 </div>
 
-                <div className="p-3 rounded-xl bg-orange-50/70 border border-orange-200/80">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase block">
-                    {catalogResult?.titleHindi}
-                  </span>
-                  <span className="text-xs font-extrabold text-slate-900 block mt-0.5">
-                    {catalogResult?.titleEnglish}
-                  </span>
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-700 break-all">
+                  /products/{publishedSlug}
                 </div>
-              </CardContent>
 
-              <CardFooter className="flex flex-col gap-2 pt-2">
-                <Button
-                  type="button"
-                  variant="default"
-                  size="lg"
-                  fullWidth
-                  disabled
-                  className="opacity-90 cursor-default"
-                >
-                  <span>Phase 5 Complete — Standing by for Phase 6 Pricing</span>
-                </Button>
+                <div className="space-y-2 pt-2">
+                  <Link href={`/products/${publishedSlug}`} className="block">
+                    <Button variant="default" size="md" fullWidth>
+                      <span>{language === "hi" ? "पब्लिक पेज देखें" : "View Public Page"}</span>
+                      <ArrowRight className="w-4 h-4 ml-1.5" />
+                    </Button>
+                  </Link>
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  fullWidth
-                  onClick={() => setCurrentStep(3)}
-                >
-                  <span>{language === "hi" ? "कैटलॉग पुनः देखें" : "Back to Catalog Preview"}</span>
-                </Button>
-              </CardFooter>
-            </Card>
+                  <Link href="/" className="block">
+                    <Button variant="outline" size="sm" fullWidth>
+                      <span>{t("navHome")}</span>
+                    </Button>
+                  </Link>
+                </div>
+              </Card>
+            )}
           </div>
         )}
       </div>

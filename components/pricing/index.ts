@@ -1,2 +1,1 @@
-// components/pricing: Cost calculation sliders, fair markup visualizer
-export {};
+export { PricingCalculator } from "./pricing-calculator";
