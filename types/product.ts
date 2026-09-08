@@ -16,9 +16,21 @@ export interface KeyAttribute {
   attributeValueHi: string;
 }
 
+export interface CraftStoryData {
+  id?: string;
+  product_id?: string;
+  artisan_story_raw: string;
+  story_en: string;
+  story_hi: string;
+  traditional_process?: string[] | string | null;
+  generational_lineage?: string | null;
+  story_source: "artisan_provided" | "demo_data";
+  created_at?: string;
+}
+
 export interface FullProductWithDetails extends Product {
   artisan?: Profile;
   tags?: ProductTag[];
-  craft_story?: CraftStory | null;
+  craft_story?: CraftStoryData | null;
   is_demo?: boolean;
 }

@@ -10,7 +10,9 @@ import {
   StepIndicator,
   PhotoCapture,
   VoiceInput,
+  CraftStoryInput,
 } from "@/components/product";
+import { CraftStoryData } from "@/types/product";
 import { BeforeAfterSlider } from "@/components/image-studio";
 import { BilingualPreview } from "@/components/catalog";
 import { PricingCalculator } from "@/components/pricing";
@@ -80,6 +82,7 @@ export default function NewProductPage() {
   // Publishing State
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishedSlug, setPublishedSlug] = useState<string | null>(null);
+  const [craftStory, setCraftStory] = useState<CraftStoryData | null>(null);
 
   // Active image used for downstream cataloging and display
   const activeImageBase64 =
@@ -185,6 +188,7 @@ export default function NewProductPage() {
         tags: catalogResult?.tagsEnglish || [],
         tags_hi: catalogResult?.tagsHindi || [],
         artisan: profile,
+        craft_story: craftStory,
       };
 
       existing.unshift(newProduct);
@@ -406,14 +410,26 @@ export default function NewProductPage() {
                 </div>
               </Card>
             ) : catalogResult ? (
-              /* Validated Bilingual Review Card */
-              <BilingualPreview
-                catalog={catalogResult}
-                vision={visionResult || undefined}
-                onUpdate={(up) => setCatalogResult(up)}
-                onProceedToPricing={() => setCurrentStep(4)}
-                onBack={handleBack}
-              />
+              <div className="space-y-4">
+                {/* Validated Bilingual Review Card */}
+                <BilingualPreview
+                  catalog={catalogResult}
+                  vision={visionResult || undefined}
+                  onUpdate={(up) => setCatalogResult(up)}
+                  onProceedToPricing={() => setCurrentStep(4)}
+                  onBack={handleBack}
+                />
+
+                {/* Optional Authenticity-First Heritage Craft Story Archiving */}
+                <CraftStoryInput
+                  story={craftStory}
+                  onStoryChange={(s) => setCraftStory(s)}
+                  artisanName={profile?.full_name || "शिल्पकार"}
+                  craftType={visionResult?.craftType || profile?.craft_type || "हस्तशिल्प"}
+                  district={profile?.district || undefined}
+                  state={profile?.state || undefined}
+                />
+              </div>
             ) : (
               /* Fallback Trigger Card */
               <Card className="text-center p-6 space-y-4">

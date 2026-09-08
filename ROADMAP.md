@@ -108,14 +108,16 @@ To ensure systematic progress, maximum reliability, and clear validation at ever
 
 ---
 
-### Phase 8: Heritage Craft Story & Polish
-* **Objective:** Deepen the SIH Heritage & Culture theme alignment and polish the end-to-end user experience.
+### Phase 8: Heritage Craft Story & Polish (✅ COMPLETED)
+* **Objective:** Deepen SIH Heritage & Culture theme alignment via an authenticity-first oral storytelling layer and polish mobile UX for budget Android devices.
 * **Tasks:**
-  1. Build optional "Craft Story" step allowing artisan to record family lineage, craft origin, and traditional techniques.
-  2. Implement Gemini prompt to format oral history into an authentic heritage badge.
-  3. Add empty states, error boundaries, offline indicators, and micro-interactions.
-  4. Perform UX audit on simulated budget Android screen sizes (360px–412px).
-* **Acceptance Criteria:** Craft story renders on public product page with cultural respect; UI feels polished, fast, and respectful.
+  1. Build optional "Craft Story" step allowing artisans to speak (voice), type, or select example stories with clear "Example stories — edit before publishing" labeling.
+  2. Implement Gemini prompt with strict anti-hallucination guardrails: structures and translates artisan words without inventing mythology or unverified awards.
+  3. Update database & type schema to store `artisan_story_raw`, `story_en`, `story_hi`, `traditional_process`, `generational_lineage`, and `story_source` (`artisan_provided` vs `demo_data`).
+  4. Build public "Heritage & Craft Story / शिल्प विरासत और कहानी" card with grounded disclaimer: "Story based on artisan provided information".
+  5. Refactor demo seed products to use grounded artisan statements rather than unverified academic claims.
+  6. Polish mobile responsive UI: $\ge 48\text{px}$ touch targets, minimum 360px viewport support, no horizontal overflow.
+* **Acceptance Criteria:** Craft story renders on public product page with cultural respect; 10/10 automated tests pass; production build succeeds.
 * **Dependencies:** Phase 7.
 
 ---

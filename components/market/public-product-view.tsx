@@ -298,6 +298,76 @@ export function PublicProductView({ product }: PublicProductViewProps) {
           </div>
         </div>
 
+        {/* Heritage & Craft Story Card (Authenticity-First Layer) */}
+        {product.craft_story && (
+          <div className="p-4 rounded-3xl bg-gradient-to-br from-amber-50/60 via-white to-orange-50/40 border border-amber-200/80 shadow-xs space-y-3">
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-amber-900 block">
+                Heritage & Craft Story
+              </span>
+              <span className="text-xs font-black text-slate-900 block">
+                शिल्प विरासत और कहानी
+              </span>
+            </div>
+
+            {/* Generational Lineage (ONLY if artisan supplied lineage information) */}
+            {product.craft_story.generational_lineage && (
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100/80 border border-amber-200 text-amber-900 text-xs font-semibold">
+                <span>👨‍👩‍👧</span>
+                <span>{product.craft_story.generational_lineage}</span>
+              </div>
+            )}
+
+            {/* Story Text */}
+            <div className="p-3.5 rounded-2xl bg-white border border-amber-100 shadow-2xs">
+              <p className="text-xs text-slate-700 leading-relaxed italic">
+                &ldquo;
+                {buyerLang === "hi"
+                  ? product.craft_story.story_hi
+                  : product.craft_story.story_en}
+                &rdquo;
+              </p>
+            </div>
+
+            {/* Traditional Process */}
+            {product.craft_story.traditional_process && (
+              <div className="space-y-1.5 pt-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+                  {buyerLang === "hi" ? "पारंपरिक प्रक्रिया (Traditional Process)" : "Traditional Process"}
+                </span>
+
+                <div className="space-y-1 text-xs text-slate-700">
+                  {Array.isArray(product.craft_story.traditional_process) ? (
+                    product.craft_story.traditional_process.map((step, idx) => (
+                      <div key={idx} className="flex items-start gap-2">
+                        <span className="text-terracotta-700 font-bold">•</span>
+                        <span>{step}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="flex items-start gap-2">
+                      <span className="text-terracotta-700 font-bold">•</span>
+                      <span>{product.craft_story.traditional_process}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Grounded Truthfulness Disclaimer */}
+            <div className="pt-2 border-t border-amber-100/80 flex items-center justify-between text-[10px] text-slate-400">
+              <span>
+                {buyerLang === "hi"
+                  ? "शिल्पकार द्वारा दी गई जानकारी पर आधारित"
+                  : "Story based on artisan provided information"}
+              </span>
+              <span className="font-semibold text-amber-800">
+                {product.craft_story.story_source === "demo_data" ? "Demo" : "Artisan"}
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Transparent Pricing Card */}
         <div className="p-4 rounded-3xl bg-white border border-slate-200/80 shadow-xs space-y-3">
           <div className="flex items-center justify-between">

@@ -36,12 +36,12 @@ export const BENCHMARK_DEMO_PRODUCTS: FullProductWithDetails[] = [
     title_en: "Handcrafted Gorakhpur Terracotta Water Pitcher",
     title_hi: "हस्तनिर्मित गोरखपुर टेराकोटा सुराही",
     description_en:
-      "Traditional natural clay water pitcher handcrafted by Master Craftsman Rameshwar Prajapati using riverbed clay of Gorakhpur. Features authentic hand-etched floral patterns and naturally cooling porous earthenware properties.",
+      "Traditional clay water pitcher shaped on a potter's wheel using locally available clay. Features hand-etched patterns and naturally cooling earthenware properties.",
     description_hi:
-      "गोरखपुर की प्राकृतिक आमी नदी की लाल मिट्टी से तैयार की गई पारंपरिक टेराकोटा सुराही। प्राकृतिक रूप से पानी को शीतल रखने वाली एवं बारीक नक्काशीदार हाथ की कलाकृति।",
+      "स्थानीय मिट्टी से चाक पर तैयार की गई पारंपरिक टेराकोटा सुराही। पानी को शीतल रखने वाली एवं हाथ की बारीक नक्काशीदार कलाकृति।",
     category: "Pottery & Claycraft",
     craft_type: "Terracotta Pottery",
-    material: "Natural River Clay",
+    material: "Locally Sourced Clay",
     visual_attributes: {
       color: "Natural Terracotta Red",
       texture: "Smooth clay finish with fine hand-incised motifs",
@@ -57,25 +57,37 @@ export const BENCHMARK_DEMO_PRODUCTS: FullProductWithDetails[] = [
     price_max: 950,
     suggested_price: 850,
     pricing_reasoning_en:
-      "Base cost comprises ₹110 for refined clay and firing fuel, 4.5 hours of skilled wheel-throwing and hand-etching at ₹55/hr (₹247), plus overheads. Suggested price of ₹850 yields a fair 123% margin recognizing GI-tagged artisanal heritage.",
+      "Base cost comprises ₹110 for refined clay and firing fuel, 4.5 hours of skilled wheel-throwing and hand-etching at ₹55/hr (₹247), plus overheads. Suggested price of ₹850 yields a fair 123% margin recognizing skilled artisanal effort.",
     pricing_reasoning_hi:
-      "मूल लागत ₹380 है जिसमें ₹110 मिट्टी व भट्टी की लागत तथा 4.5 घंटे का कुशल पारिश्रमिक शामिल है। ₹850 का विक्रय मूल्य शिल्पकार को उनके पारंपरिक हुनर का सम्मानजनक मूल्य प्रदान करता है।",
+      "मूल लागत ₹380 है जिसमें ₹110 मिट्टी व भट्टी की लागत तथा 4.5 घंटे का कुशल पारिश्रमिक शामिल है। ₹850 का विक्रय मूल्य शिल्पकार को उचित आय प्रदान करता है।",
     status: "published",
     created_at: "2026-03-01T10:00:00.000Z",
     updated_at: "2026-03-01T10:00:00.000Z",
     artisan: DEMO_ARTISAN_TERRACOTTA,
     is_demo: true,
+    craft_story: {
+      artisan_story_raw: "यह सुराही हमारे गांव में उपलब्ध स्थानीय मिट्टी से बनाई जाती है। हमारे परिवार में यह हुनर दादाजी से पिताजी और फिर मुझे मिला। हम चाक पर हाथ से मिट्टी को आकार देकर लकड़ी की भट्टी में पकाते हैं।",
+      story_hi: "शिल्पकार के शब्दों में: यह हुनर हमारे परिवार में तीन पीढ़ियों से चला आ रहा है। स्थानीय मिट्टी को चाक पर हाथ से आकार देकर लकड़ी की पारंपरिक भट्टी में पकाया जाता है।",
+      story_en: "In the artisan's words: This craft has been practiced across three generations in their family. Handcrafted on a potter's wheel using local clay and fired in traditional wood kilns.",
+      traditional_process: [
+        "स्थानीय मिट्टी की छनाई व तैयारी (Clay refining & preparation)",
+        "चाक पर हाथ से सुराही को आकार देना (Manual wheel-throwing & shaping)",
+        "पारंपरिक लकड़ी की भट्टी में पकाना (Traditional wood-fired kiln baking)",
+      ],
+      generational_lineage: "तीन पीढ़ियों से सीखा गया पारिवारिक हुनर (Learned across 3 family generations)",
+      story_source: "demo_data",
+    },
   },
   {
     id: "demo-prod-maheshwari-saree",
     artisan_id: DEMO_ARTISAN_WEAVER.id,
     slug: "maheshwari-handloom-silk-saree",
-    title_en: "Authentic Maheshwari Handloom Silk-Cotton Saree",
+    title_en: "Handwoven Maheshwari Silk-Cotton Saree",
     title_hi: "पारंपरिक महेश्वरी हथकरघा सिल्क-कॉटन साड़ी",
     description_en:
-      "Exquisite handwoven saree from Maheshwar featuring reversible zari border inspired by the Ahilya Fort parapets. Woven on traditional pit looms using pure mulberry silk warp and fine mercerized cotton weft.",
+      "Handwoven saree from Maheshwar featuring traditional reversible zari border. Woven on traditional wooden looms using silk warp and fine cotton weft.",
     description_hi:
-      "महेश्वर के अहिल्या किले के कंगूरों से प्रेरित पारंपरिक ज़री बॉर्डर वाली शुद्ध रेशम एवं सूती हथकरघा साड़ी। पारंपरिक गड्ढा करघे (Pit Loom) पर हाथ से बुनी गई।",
+      "महेश्वर की पारंपरिक ज़री बॉर्डर वाली शुद्ध रेशम एवं सूती हथकरघा साड़ी। पारंपरिक लकड़ी के करघे पर हाथ से बुनी गई।",
     category: "Textiles & Handloom",
     craft_type: "Maheshwari Weaving",
     material: "Mulberry Silk & Mercerized Cotton",
@@ -102,6 +114,18 @@ export const BENCHMARK_DEMO_PRODUCTS: FullProductWithDetails[] = [
     updated_at: "2026-03-02T14:30:00.000Z",
     artisan: DEMO_ARTISAN_WEAVER,
     is_demo: true,
+    craft_story: {
+      artisan_story_raw: "मैं पिछले 20 वर्षों से महेश्वर में पारंपरिक हथकरघे पर साड़ियां बुन रही हूं। यह काम मुझे मेरे परिवार के वरिष्ठ बुनकरों ने सिखाया। हम लकड़ी के करघे पर रेशमी व सूती धागों से पारंपरिक किनारी तैयार करते हैं।",
+      story_hi: "शिल्पकार के शब्दों में: दो दशकों से परिवार के पारंपरिक ज्ञान के साथ हथकरघा बुनाई की जा रही है। लकड़ी के करघे पर रेशमी व सूती धागों से हाथ से बारीक किनारी बुनी जाती है।",
+      story_en: "In the artisan's words: Practiced for two decades following family handloom traditions. Handwoven on traditional wooden looms combining fine silk and cotton yarns.",
+      traditional_process: [
+        "ताना और बाना सूत तैयार करना (Warp & weft yarn preparation)",
+        "पारंपरिक लकड़ी के करघे पर हाथ से बुनाई (Handweaving on traditional pit loom)",
+        "हाथ से पारंपरिक किनारी संयोजन (Manual border motif interlacing)",
+      ],
+      generational_lineage: "पारंपरिक बुनकर परिवार की पुश्तैनी सीख (Passed down through family weaver lineage)",
+      story_source: "demo_data",
+    },
   },
 ];
 
