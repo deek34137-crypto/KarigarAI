@@ -34,27 +34,34 @@
 * **Spoken Pitch:**
   > *"Rameshwar-ji doesn't fill out forms. He simply points his camera. In the background, Google Gemini Multimodal AI securely analyzes the image on our server. Within seconds, it identifies: 'Terracotta Pottery', 'Natural Clay', detects the hand-carved floral patterns, and extracts search tags — with 100% structured JSON validation."*
 
-### Step 3: Voice Input ➔ Bilingual Smart Catalog (0:50 – 1:15)
+### Step 3: Voice Input ➔ Bilingual Smart Catalog (0:50 – 1:10)
 * **Presenter Action:** Tap the microphone icon or play the 10-second Hindi voice note:
   *"यह हमारे गोरखपुर की लाल मिट्टी की सुराही है, पानी को प्राकृतिक रूप से ठंडा रखती है..."*
   Tap **"कैटलॉग बनाएं" (Generate Catalog)**.
 * **Spoken Pitch:**
   > *"Rameshwar-ji speaks naturally in his native Hindi. KarigarAI transforms this oral description into professional e-commerce listings in both English and Hindi. Notice the titles, descriptions, and specifications: natural, culturally resonant, and ready for e-commerce."*
 
-### Step 4: Transparent Costing & Pricing Assistant (1:15 – 1:35)
+### Step 3b: Optional Heritage Craft Story Archiving (1:10 – 1:30)
+* **Presenter Action:** Under Step 3, show the **"Tell Your Craft Story (शिल्प विरासत और कहानी)"** card. Tap the pottery example or speak:
+  *"हमारे परिवार में तीन पीढ़ियों से मिट्टी के बर्तन बनाए जा रहे हैं। यह हुनर मैंने अपने पिताजी से सीखा।"*
+  Tap **"AI से विरासत कहानी संरचित करें"**.
+* **Spoken Pitch:**
+  > *"Under the SIH Heritage & Culture theme, we archive intangible cultural knowledge. KarigarAI acts strictly as an editorial structuring assistant — it never invents mythology or fake awards. It extracts authentic generational lineage and traditional wheel techniques into a polished bilingual narrative, which Rameshwar-ji can review, edit, or skip with one tap."*
+
+### Step 4: Transparent Costing & Pricing Assistant (1:30 – 1:50)
 * **Presenter Action:** Navigate to the Pricing step. Show sliders: Material ₹150, Labour 4 hours × ₹100/hr, Overhead ₹50.
 * **Spoken Pitch:**
   > *"Middlemen exploit artisans because pricing is opaque. We don't pretend to have a black-box ML model. We calculate exact production cost deterministically: ₹600. Then, our AI Pricing Assistant evaluates craft intricacy and suggests a fair retail range: ₹800 to ₹950, with clear, transparent reasoning in Hindi so Rameshwar-ji knows his worth."*
 
-### Step 5: One-Tap Publish & Public Market Linkage (1:35 – 1:55)
-* **Presenter Action:** Tap **"प्रकाशित करें" (Publish)**. The public URL `/products/handcrafted-terracotta-surahi-4912` loads.
+### Step 5: One-Tap Publish & Exhibition Stall QR Card (1:50 – 2:10)
+* **Presenter Action:** Tap **"प्रकाशित करें" (Publish)**. On the confirmation card, tap **"स्टॉल QR कोड देखें / View Stall QR Card"**. Show the printable exhibition card. Then tap **"पब्लिक पेज देखें"** to open `/p/gorakhpur-terracotta-pitcher`.
 * **Spoken Pitch:**
-  > *"With one tap, the product is live on a public, mobile-responsive page. Notice the clean studio imagery, the bilingual toggle, and the craft heritage story highlighting Gorakhpur's terracotta tradition."*
+  > *"With one tap, the listing is live. For physical craft melas like Surajkund or Dastkar, KarigarAI generates an exhibition stall QR card. When an urban visitor scans it, they open the product page on their phone, discovering the verified craft story and transparent fair price."*
 
-### Step 6: Market Linkage in Action & Conclusion (1:55 – 2:30)
-* **Presenter Action:** Tap **"व्हाट्सएप पर ऑर्डर करें" (Inquire on WhatsApp)**.
+### Step 6: Direct WhatsApp Market Linkage (2:10 – 2:30)
+* **Presenter Action:** Tap **"व्हाट्सएप पर ऑर्डर करें" (Inquire on WhatsApp)**. Show WhatsApp launching with the pre-composed order text.
 * **Spoken Pitch:**
-  > *"A single tap on WhatsApp opens a pre-composed message with the product link directly connecting urban buyers to Rameshwar-ji. In 2 minutes, with zero English typing, a marginalized artisan has achieved direct digital market linkage. KarigarAI: Preserving Heritage, Empowering Artisans. Thank you!"*
+  > *"A single tap connects the buyer directly to Rameshwar-ji on WhatsApp with zero commissions and zero middleman exploitation. In 2.5 minutes, with zero English typing, a traditional artisan achieves complete digital empowerment. KarigarAI: Preserving Heritage, Empowering Artisans. Thank you!"*
 
 ---
 

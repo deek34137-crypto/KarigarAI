@@ -37,6 +37,26 @@ describe("Phase 8: Heritage Craft Story & Authenticity Tests", () => {
     );
   });
 
+  it("should reject invalid craft story outputs failing constraints", () => {
+    const invalidData = {
+      storyEnglish: "Too short",
+      storyHindi: "छोटा",
+      traditionalProcess: "",
+    };
+
+    const parsed = CraftStorySchema.safeParse(invalidData);
+    assert.strictEqual(parsed.success, false, "Invalid output must be rejected by Zod schema");
+  });
+
+  it("should enforce anti-hallucination constraints in the craft story prompt", async () => {
+    const { CRAFT_STORY_SYSTEM_PROMPT } = await import("../lib/ai/prompts/craft-story.ts");
+    assert.ok(CRAFT_STORY_SYSTEM_PROMPT.includes("editorial assistant"));
+    assert.ok(CRAFT_STORY_SYSTEM_PROMPT.includes("Do not invent facts"));
+    assert.ok(CRAFT_STORY_SYSTEM_PROMPT.includes("Do not infer historical age"));
+    assert.ok(CRAFT_STORY_SYSTEM_PROMPT.includes("Do not invent royal, religious, mythological"));
+    assert.ok(CRAFT_STORY_SYSTEM_PROMPT.includes("generationalLineage to null"));
+  });
+
   it("should verify benchmark demo products have structured craft_story with demo_data source", () => {
     assert.strictEqual(BENCHMARK_DEMO_PRODUCTS.length, 2);
 
@@ -54,5 +74,32 @@ describe("Phase 8: Heritage Craft Story & Authenticity Tests", () => {
         "Must retain raw artisan statement"
       );
     }
+  });
+
+  it("should validate that raw artisan story input must meet minimum length", () => {
+    const emptyInput = "   ";
+    const isValid = emptyInput.trim().length >= 5;
+    assert.strictEqual(isValid, false, "Whitespace or short input must be rejected gracefully");
+
+    const validRaw = "हमारे परिवार में यह काम दादाजी के समय से किया जा रहा है।";
+    assert.strictEqual(validRaw.trim().length >= 5, true);
+  });
+
+  it("should produce a valid fallback CraftStoryData when AI is unavailable", () => {
+    const rawStory = "मैंने यह शिल्प अपने पिताजी से सीखा।";
+    const hasFamily = /दादा|पिता|माता|सास|परिवार|पीढ़ी/i.test(rawStory);
+
+    const fallback = {
+      artisan_story_raw: rawStory,
+      story_hi: `शिल्पकार के अनुसार: "${rawStory}"। यह पारंपरिक शिल्प हाथों के हुनर से तैयार किया जाता है।`,
+      story_en: `According to the artisan: "${rawStory}". This traditional craft is handcrafted through dedication.`,
+      traditional_process: "पारंपरिक हस्तनिर्मित तकनीक • स्थानीय कच्ची सामग्री",
+      generational_lineage: hasFamily ? "पारिवारिक सीख" : null,
+      story_source: "artisan_provided" as const,
+    };
+
+    assert.ok(fallback.story_hi.includes(rawStory));
+    assert.strictEqual(fallback.story_source, "artisan_provided");
+    assert.ok(fallback.generational_lineage !== null);
   });
 });

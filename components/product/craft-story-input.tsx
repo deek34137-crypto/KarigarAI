@@ -59,6 +59,9 @@ export function CraftStoryInput({
   const [isDemoExample, setIsDemoExample] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedStoryHi, setEditedStoryHi] = useState("");
+  const [editedStoryEn, setEditedStoryEn] = useState("");
 
   // Web Speech hook
   const {
@@ -165,45 +168,124 @@ export function CraftStoryInput({
             </Badge>
           </div>
 
-          {/* Bilingual Preview */}
-          <div className="space-y-2 text-xs">
-            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-              <span className="text-[10px] font-bold text-terracotta-700 block uppercase mb-0.5">
-                हिन्दी कहानी
-              </span>
-              <p className="text-slate-700 leading-relaxed italic">
-                &ldquo;{story.story_hi}&rdquo;
-              </p>
-            </div>
-
-            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-              <span className="text-[10px] font-bold text-slate-500 block uppercase mb-0.5">
-                English Story
-              </span>
-              <p className="text-slate-600 leading-relaxed italic">
-                &ldquo;{story.story_en}&rdquo;
-              </p>
-            </div>
-
-            {story.generational_lineage && (
-              <div className="flex items-center gap-1.5 text-[11px] text-amber-900 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200/80">
-                <span>👨‍👩‍👧</span>
-                <span className="font-semibold">{story.generational_lineage}</span>
+          {/* Bilingual Preview or Edit Form */}
+          {isEditing ? (
+            <div className="space-y-3 pt-1">
+              <div className="space-y-1 text-left">
+                <label className="text-[10px] font-bold text-terracotta-800 uppercase">
+                  {language === "hi" ? "हिन्दी कहानी संपादित करें" : "Edit Hindi Story"}
+                </label>
+                <textarea
+                  value={editedStoryHi}
+                  onChange={(e) => setEditedStoryHi(e.target.value)}
+                  rows={3}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-900 bg-white focus:ring-2 focus:ring-terracotta-500"
+                />
               </div>
-            )}
-          </div>
 
-          {/* Action Row */}
-          <div className="flex justify-end gap-2 pt-1 border-t border-slate-100">
-            <button
-              type="button"
-              onClick={() => onStoryChange(null)}
-              className="text-xs font-bold text-rose-600 hover:text-rose-700 flex items-center gap-1 p-1"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>{language === "hi" ? "कहानी हटाएं" : "Remove"}</span>
-            </button>
-          </div>
+              <div className="space-y-1 text-left">
+                <label className="text-[10px] font-bold text-slate-700 uppercase">
+                  {language === "hi" ? "अंग्रेजी कहानी संपादित करें" : "Edit English Story"}
+                </label>
+                <textarea
+                  value={editedStoryEn}
+                  onChange={(e) => setEditedStoryEn(e.target.value)}
+                  rows={3}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-900 bg-white focus:ring-2 focus:ring-terracotta-500"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsEditing(false)}
+                >
+                  <span>{language === "hi" ? "रद्द करें" : "Cancel"}</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="default"
+                  size="sm"
+                  onClick={() => {
+                    onStoryChange({
+                      ...story,
+                      story_hi: editedStoryHi,
+                      story_en: editedStoryEn,
+                    });
+                    setIsEditing(false);
+                  }}
+                >
+                  <Check className="w-3.5 h-3.5 mr-1" />
+                  <span>{language === "hi" ? "सुरक्षित करें" : "Save Changes"}</span>
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2 text-xs text-left">
+              <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                <span className="text-[10px] font-bold text-terracotta-700 block uppercase mb-0.5">
+                  हिन्दी कहानी
+                </span>
+                <p className="text-slate-700 leading-relaxed italic">
+                  &ldquo;{story.story_hi}&rdquo;
+                </p>
+              </div>
+
+              <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                <span className="text-[10px] font-bold text-slate-500 block uppercase mb-0.5">
+                  English Story
+                </span>
+                <p className="text-slate-600 leading-relaxed italic">
+                  &ldquo;{story.story_en}&rdquo;
+                </p>
+              </div>
+
+              {story.generational_lineage && (
+                <div className="flex items-center gap-1.5 text-[11px] text-amber-900 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200/80">
+                  <span>👨‍👩‍👧</span>
+                  <span className="font-semibold">{story.generational_lineage}</span>
+                </div>
+              )}
+
+              {/* Action Row: Edit | Regenerate | Remove */}
+              <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditedStoryHi(story.story_hi);
+                      setEditedStoryEn(story.story_en);
+                      setIsEditing(true);
+                    }}
+                    className="text-xs font-bold text-terracotta-700 hover:text-terracotta-800 flex items-center gap-1 py-1 px-2 rounded-lg hover:bg-orange-50 transition-colors"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                    <span>{language === "hi" ? "संपादित करें" : "Edit"}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleGenerateStory}
+                    className="text-xs font-bold text-slate-600 hover:text-slate-900 flex items-center gap-1 py-1 px-2 rounded-lg hover:bg-slate-100 transition-colors"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                    <span>{language === "hi" ? "पुनः बनाएं" : "Regenerate"}</span>
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => onStoryChange(null)}
+                  className="text-xs font-bold text-rose-600 hover:text-rose-700 flex items-center gap-1 p-1 hover:bg-rose-50 rounded-lg transition-colors"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>{language === "hi" ? "कहानी हटाएं" : "Remove"}</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         /* Input Selection: Voice | Type | Example */
@@ -254,6 +336,11 @@ export function CraftStoryInput({
               <button
                 type="button"
                 onClick={isListening ? stopListening : startListening}
+                aria-label={
+                  isListening
+                    ? (language === "hi" ? "आवाज रिकॉर्डिंग बंद करें" : "Stop voice recording")
+                    : (language === "hi" ? "आवाज से कहानी रिकॉर्ड करें" : "Start voice recording")
+                }
                 className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto transition-all shadow-md active:scale-95 ${
                   isListening
                     ? "bg-rose-500 text-white animate-pulse ring-4 ring-rose-200"

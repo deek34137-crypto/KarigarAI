@@ -81,3 +81,14 @@
 * **Consequences:**
   * Positive: Immediate real-world utility; zero payment liability; zero friction for both artisan and prospective buyer.
   * Negative: Does not track completed financial transactions automatically (deferred to future roadmap).
+
+---
+
+### ADR-008: Editorial Assistant Model for Heritage Craft Stories (Anti-Hallucination)
+* **Status:** Accepted
+* **Context:** Under SIH26090 (Heritage & Culture), AI systems are at risk of fabricating historical dates, false geographic indications (GI Tags), ancient mythology, or fake government awards. Unverified claims harm artisan credibility before evaluators and buyers.
+* **Decision:** Treat Gemini strictly as an "editorial structuring and translation assistant", NOT a "heritage fact generator". The model structures and translates solely what the artisan states orally or in writing. Generational lineage is left `null` unless explicitly stated by the artisan. Output carries provenance metadata (`artisan_provided` vs `demo_data`) and public pages display grounded disclaimers.
+* **Consequences:**
+  * Positive: Zero fabricated claims; builds genuine cultural trust; defensible before SIH evaluators.
+  * Negative: Requires the artisan to provide basic recollections about their learning or family history to generate rich stories.
+
