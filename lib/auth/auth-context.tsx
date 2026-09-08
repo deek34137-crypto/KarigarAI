@@ -37,13 +37,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const stored = localStorage.getItem(PROFILE_STORAGE_KEY);
       if (stored) {
         setProfile(JSON.parse(stored));
-      } else {
-        // Pre-populate with verified demo artisan to ensure seamless evaluation
-        setProfile(DEMO_ARTISAN);
-        localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(DEMO_ARTISAN));
       }
+      // If no stored profile — user is a buyer/visitor. Leave profile as null.
     } catch {
-      setProfile(DEMO_ARTISAN);
+      // Storage error — leave profile as null
     } finally {
       setIsLoading(false);
     }
