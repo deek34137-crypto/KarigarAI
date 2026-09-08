@@ -367,9 +367,9 @@ export function buildWhatsAppInquiryUrl(params: {
 
   let message = "";
   if (params.lang === "hi") {
-    message = `नमस्ते ${artisanName} जी,\n\nमैंने कारीगरAI पर आपका उत्पाद देखा है:\n📌 *${params.productTitle}*\n💰 मूल्य: ₹${params.price.toLocaleString("en-IN")}\n🔗 लिंक: ${params.productUrl}\n\nक्या यह उत्पाद अभी उपलब्ध है? कृपया मुझे और जानकारी व डिलीवरी प्रक्रिया बताएं।\nधन्यवाद!`;
+    message = `नमस्ते ${artisanName} जी,\n\nमैंने KarigarAI पर आपका उत्पाद देखा है:\n*${params.productTitle}*\nमूल्य: Rs. ${params.price.toLocaleString("en-IN")}\nलिंक: ${params.productUrl}\n\nक्या यह उत्पाद अभी उपलब्ध है? कृपया ऑर्डर और डिलीवरी की जानकारी दें।\nधन्यवाद!`;
   } else {
-    message = `Hello ${artisanName},\n\nI saw your handcrafted product on KarigarAI:\n📌 *${params.productTitle}*\n💰 Price: ₹${params.price.toLocaleString("en-IN")}\n🔗 Link: ${params.productUrl}\n\nIs this product currently available? Please share order and shipping details.\nThank you!`;
+    message = `Hello ${artisanName},\n\nI found your handcrafted product on KarigarAI:\n*${params.productTitle}*\nPrice: Rs. ${params.price.toLocaleString("en-IN")}\nLink: ${params.productUrl}\n\nIs this product currently available? Please share order and delivery details.\nThank you!`;
   }
 
   return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
@@ -377,18 +377,22 @@ export function buildWhatsAppInquiryUrl(params: {
 
 /**
  * Generates a broadcast WhatsApp link for an artisan to share their own public link.
+ * No emojis — renders correctly on all Android/iOS WhatsApp versions.
  */
 export function buildArtisanBroadcastUrl(params: {
   productTitle: string;
+  artisanName?: string | null;
   price: number;
   productUrl: string;
   lang: "hi" | "en";
 }): string {
+  const artisanName = params.artisanName || (params.lang === "hi" ? "शिल्पकार" : "Artisan");
+
   let message = "";
   if (params.lang === "hi") {
-    message = `🙏 प्रणाम!\n\nमैंने कारीगरAI पर अपना हस्तनिर्मित उत्पाद जोड़ा है:\n✨ *${params.productTitle}*\n💰 शिल्पकार मूल्य: ₹${params.price.toLocaleString("en-IN")}\n\nकैटलॉग देखें और सीधे व्हाट्सएप पर ऑर्डर करें:\n👉 ${params.productUrl}\n\nकारीगरAI • वोकल फॉर लोकल`;
+    message = `नमस्ते!\n\nमैंने KarigarAI पर अपना हस्तनिर्मित उत्पाद साझा किया है:\n\n*${params.productTitle}*\nमूल्य: Rs. ${params.price.toLocaleString("en-IN")}\n\nतस्वीरें और पूरी जानकारी यहाँ देखें:\n${params.productUrl}\n\nअगर पसंद आए तो खरीदारी या उपलब्धता के लिए मुझसे WhatsApp पर संपर्क करें।\n\nधन्यवाद\n-- ${artisanName}\nKarigarAI * Vocal for Local`;
   } else {
-    message = `🙏 Greetings!\n\nI have added my handcrafted product on KarigarAI:\n✨ *${params.productTitle}*\n💰 Direct Artisan Price: ₹${params.price.toLocaleString("en-IN")}\n\nView my catalog and order directly on WhatsApp:\n👉 ${params.productUrl}\n\nKarigarAI • Vocal for Local`;
+    message = `Hello!\n\nI'm sharing my handcrafted product on KarigarAI:\n\n*${params.productTitle}*\nPrice: Rs. ${params.price.toLocaleString("en-IN")}\n\nView photos and details here:\n${params.productUrl}\n\nInterested? Message me on WhatsApp for availability and purchase details.\n\nThank you\n-- ${artisanName}\nKarigarAI * Vocal for Local`;
   }
 
   return `https://wa.me/?text=${encodeURIComponent(message)}`;

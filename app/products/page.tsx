@@ -284,6 +284,7 @@ export default function ArtisanProductsPage() {
 
               const broadcastUrl = buildArtisanBroadcastUrl({
                 productTitle: title,
+                artisanName: profile?.full_name || product.artisan?.full_name || null,
                 price: product.suggested_price || product.price_min || 0,
                 productUrl: publicUrl,
                 lang: language,

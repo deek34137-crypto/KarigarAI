@@ -64,9 +64,10 @@ describe("Phase 7: Market Linkage & Public Listings Unit Tests", () => {
     assert.ok(decodedEn.includes("3,400"));
   });
 
-  it("should generate valid artisan broadcast URL", () => {
+  it("should generate valid artisan broadcast URL with artisan name and no emoji characters", () => {
     const broadcastUrl = buildArtisanBroadcastUrl({
       productTitle: "टेराकोटा सुराही",
+      artisanName: "रामेश्वर प्रजापति",
       price: 850,
       productUrl: "https://karigarai.app/p/gorakhpur-terracotta-pitcher",
       lang: "hi",
@@ -74,9 +75,28 @@ describe("Phase 7: Market Linkage & Public Listings Unit Tests", () => {
 
     assert.ok(broadcastUrl.startsWith("https://wa.me/?text="));
     const decoded = decodeURIComponent(broadcastUrl.replace("https://wa.me/?text=", ""));
-    assert.ok(decoded.includes("टेराकोटा सुराही"));
-    assert.ok(decoded.includes("850"));
-    assert.ok(decoded.includes("https://karigarai.app/p/gorakhpur-terracotta-pitcher"));
+    assert.ok(decoded.includes("टेराकोटा सुराही"), "Should include product title");
+    assert.ok(decoded.includes("850"), "Should include price");
+    assert.ok(decoded.includes("https://karigarai.app/p/gorakhpur-terracotta-pitcher"), "Should include product URL");
+    assert.ok(decoded.includes("रामेश्वर प्रजापति"), "Should include artisan name in sign-off");
+    assert.ok(!decoded.includes("🙏"), "Should not include emojis (renders as garbage on some devices)");
+    assert.ok(!decoded.includes("✨"), "Should not include emojis");
+    assert.ok(!decoded.includes("💰"), "Should not include emojis");
+
+    // English version
+    const enBroadcastUrl = buildArtisanBroadcastUrl({
+      productTitle: "Handmade Terracotta Flower Pots",
+      artisanName: "Rameshwar Prajapati",
+      price: 910,
+      productUrl: "https://karigar-ai90.vercel.app/p/handmade-natural-terracotta-flower-pots",
+      lang: "en",
+    });
+
+    const decodedEn = decodeURIComponent(enBroadcastUrl.replace("https://wa.me/?text=", ""));
+    assert.ok(decodedEn.includes("Handmade Terracotta Flower Pots"), "Should include product title");
+    assert.ok(decodedEn.includes("910"), "Should include price");
+    assert.ok(decodedEn.includes("Rameshwar Prajapati"), "Should include artisan name");
+    assert.ok(decodedEn.includes("KarigarAI"), "Should include brand");
   });
 
   it("should resolve benchmark demo products and flag them with is_demo: true", async () => {
