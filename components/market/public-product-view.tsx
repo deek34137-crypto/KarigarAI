@@ -16,6 +16,7 @@ import {
   AlertCircle,
   HelpCircle,
   CheckCircle2,
+  Heart,
 } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/context";
 import { FullProductWithDetails } from "@/types/product";
@@ -24,6 +25,7 @@ import { WhatsAppButton } from "./whatsapp-button";
 import { ShareButton } from "./share-button";
 import { QrModal } from "./qr-modal";
 import { Badge, Card, Button } from "@/components/ui";
+import { isWishlisted, toggleWishlist } from "@/lib/wishlist";
 
 interface PublicProductViewProps {
   product: FullProductWithDetails;
@@ -31,19 +33,41 @@ interface PublicProductViewProps {
 
 export function PublicProductView({ product }: PublicProductViewProps) {
   const { language, setLanguage } = useLanguage();
-  // Synchronized with global preferred language, with manual page-level override
   const [buyerLang, setBuyerLang] = useState<"hi" | "en">(language);
   const [showOriginalImage, setShowOriginalImage] = useState(false);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+  const [wishlisted, setWishlisted] = useState(false);
+  const [wishlistPop, setWishlistPop] = useState(false);
 
   // Sync if global language changes
   useEffect(() => {
     setBuyerLang(language);
   }, [language]);
 
+  // Load initial wishlist state from localStorage
+  useEffect(() => {
+    setWishlisted(isWishlisted(product.id));
+  }, [product.id]);
+
   const handleLangChange = (newLang: "hi" | "en") => {
     setBuyerLang(newLang);
     setLanguage(newLang);
+  };
+
+  const handleWishlist = () => {
+    const added = toggleWishlist({
+      id: product.id,
+      slug: product.slug,
+      title_en: product.title_en,
+      title_hi: product.title_hi,
+      artisan_name: product.artisan?.full_name || "",
+      craft_type: product.craft_type || "",
+      price: product.suggested_price || product.price_min || 0,
+      image_url: product.processed_image_url || product.original_image_url || null,
+    });
+    setWishlisted(added);
+    setWishlistPop(true);
+    setTimeout(() => setWishlistPop(false), 600);
   };
 
   const title = buyerLang === "hi" ? product.title_hi : product.title_en;
@@ -112,6 +136,27 @@ export function PublicProductView({ product }: PublicProductViewProps) {
 
           {/* Quick Header Actions */}
           <div className="flex items-center gap-1">
+            {/* Wishlist / Save heart button */}
+            <button
+              type="button"
+              onClick={handleWishlist}
+              title={
+                wishlisted
+                  ? (buyerLang === "hi" ? "सहेजा गया" : "Saved to Wishlist")
+                  : (buyerLang === "hi" ? "बाद के लिए सहेजें" : "Save for Later")
+              }
+              className={`p-2 rounded-xl transition-all duration-200 ${
+                wishlistPop ? "scale-125" : "scale-100"
+              } ${
+                wishlisted
+                  ? "text-rose-500 bg-rose-50"
+                  : "text-slate-500 hover:bg-slate-100 hover:text-rose-400"
+              }`}
+            >
+              <Heart
+                className={`w-4 h-4 transition-all ${wishlisted ? "fill-rose-500 stroke-rose-500" : ""}`}
+              />
+            </button>
             <button
               type="button"
               onClick={() => setIsQrModalOpen(true)}

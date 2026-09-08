@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/context";
 import { MobileShell } from "@/components/layout";
@@ -26,9 +26,13 @@ import {
   Eye,
   ShoppingBag,
   LogIn,
+  Heart,
+  Trash2,
+  ExternalLink,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { formatINR, formatLocalizedText, getLocalizedInitial } from "@/lib/utils";
+import { getWishlist, removeFromWishlist, type WishlistItem } from "@/lib/wishlist";
 
 export default function HomePage() {
   const { language, t } = useLanguage();
@@ -36,12 +40,18 @@ export default function HomePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [demoLabourHours, setDemoLabourHours] = useState(5);
   const [demoMaterialCost, setDemoMaterialCost] = useState(300);
+  const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
 
   const hourlyWage = 100;
   const overhead = 50;
   const demoBaseCost = demoMaterialCost + demoLabourHours * hourlyWage + overhead;
   const suggestedMin = Math.round(demoBaseCost * 1.25);
   const suggestedMax = Math.round(demoBaseCost * 1.5);
+
+  // Load buyer wishlist from localStorage
+  useEffect(() => {
+    setWishlist(getWishlist());
+  }, []);
 
   // Buyer / unauthenticated landing
   if (!isLoading && !profile) {
@@ -112,6 +122,83 @@ export default function HomePage() {
             </div>
           </div>
 
+          {/* ── Wishlist Section ────────────────────────────────────── */}
+          {wishlist.length > 0 && (
+            <div className="w-full space-y-3 text-left">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                  <Heart className="w-3.5 h-3.5 fill-rose-500 stroke-rose-500" />
+                  {language === "hi" ? "आपकी सेव्ड लिस्ट" : "Your Saved Products"}
+                </h2>
+                <span className="text-[10px] font-bold text-rose-500 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
+                  {wishlist.length}
+                </span>
+              </div>
+
+              <div className="space-y-2">
+                {wishlist.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-3 p-3 rounded-xl bg-white border border-slate-200/80 shadow-xs"
+                  >
+                    {/* Product thumbnail */}
+                    <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-200">
+                      {item.image_url ? (
+                        <img
+                          src={item.image_url}
+                          alt={item.title_en}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-300">
+                          <ShoppingBag className="w-5 h-5" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-slate-900 truncate leading-tight">
+                        {language === "hi" ? item.title_hi : item.title_en}
+                      </p>
+                      <p className="text-[10px] text-slate-500 truncate mt-0.5">
+                        {item.artisan_name || item.craft_type}
+                      </p>
+                      <p className="text-sm font-extrabold text-terracotta-700 mt-0.5">
+                        Rs. {item.price.toLocaleString("en-IN")}
+                      </p>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex flex-col items-center gap-1.5 shrink-0">
+                      <Link href={`/p/${item.slug}`}>
+                        <button
+                          type="button"
+                          title={language === "hi" ? "देखें" : "View"}
+                          className="w-8 h-8 rounded-lg bg-orange-50 text-terracotta-700 flex items-center justify-center hover:bg-orange-100 transition-colors border border-orange-200"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </button>
+                      </Link>
+                      <button
+                        type="button"
+                        title={language === "hi" ? "हटाएं" : "Remove"}
+                        onClick={() => {
+                          removeFromWishlist(item.id);
+                          setWishlist(getWishlist());
+                        }}
+                        className="w-8 h-8 rounded-lg bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-rose-50 hover:text-rose-500 transition-colors border border-slate-200"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── Artisan CTA ─────────────────────────────────────────── */}
           <div className="w-full pt-2 space-y-2">
             <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-wide">
               {language === "hi" ? "क्या आप एक कारीगर हैं?" : "Are you an artisan?"}

@@ -343,6 +343,79 @@ export async function fetchCatalogProducts(): Promise<FullProductWithDetails[]> 
 }
 
 /**
+ * Fetches all PUBLISHED products for the public buyer marketplace.
+ * Combines Supabase cloud products + demo benchmark products.
+ * Returns only status=published items, sorted newest first.
+ */
+export async function fetchMarketplaceProducts(): Promise<FullProductWithDetails[]> {
+  const idMap = new Map<string, FullProductWithDetails>();
+
+  // Seed with published benchmark demo products
+  BENCHMARK_DEMO_PRODUCTS.filter((p) => p.status === "published").forEach((p) =>
+    idMap.set(p.id, p)
+  );
+
+  try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (supabaseUrl && supabaseAnonKey) {
+      let client: any;
+      if (typeof window === "undefined") {
+        const { createAdminClient } = await import("@/lib/supabase/admin");
+        client = createAdminClient();
+      } else {
+        const { createClient } = await import("@/lib/supabase/client");
+        client = createClient();
+      }
+
+      const { data, error } = await client
+        .from("products")
+        .select("*, artisan:profiles(*), craft_stories(*), product_tags(*)")
+        .eq("status", "published")
+        .order("created_at", { ascending: false })
+        .limit(20);
+
+      if (!error && data) {
+        data.forEach((raw: any) => {
+          const rawStory = Array.isArray(raw.craft_stories)
+            ? raw.craft_stories[0] || null
+            : raw.craft_stories || null;
+
+          const item: FullProductWithDetails = {
+            ...raw,
+            craft_story: rawStory
+              ? {
+                  id: rawStory.id,
+                  product_id: rawStory.product_id,
+                  artisan_story_raw: rawStory.artisan_story_raw || "",
+                  story_en: rawStory.story_en || "",
+                  story_hi: rawStory.story_hi || "",
+                  traditional_process: rawStory.traditional_process
+                    ? typeof rawStory.traditional_process === "string"
+                      ? rawStory.traditional_process.split("\n").filter(Boolean)
+                      : rawStory.traditional_process
+                    : null,
+                  generational_lineage: rawStory.generational_lineage || null,
+                  story_source: "artisan_provided" as const,
+                  created_at: rawStory.created_at,
+                }
+              : null,
+            tags: raw.product_tags || [],
+          };
+          idMap.set(item.id, item);
+        });
+      }
+    }
+  } catch (err) {
+    console.warn("fetchMarketplaceProducts fallback:", err);
+  }
+
+  return Array.from(idMap.values()).sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+}
+
+/**
  * Generates an inquiry WhatsApp link for a buyer to contact the artisan directly.
  * Does NOT hardcode contact info; reads directly from profile/artisan data.
  */
